@@ -1,0 +1,25 @@
+{
+    "products": [
+        {
+            "name": "Smartphone X",
+            "category": "EL",
+            "sub_category": "PH",
+            "year": "24",
+            "reference": "ELPH240001"
+        },
+        {
+            "name": "Laptop Y",
+            "category": "EL",
+            "sub_category": "LA",
+            "year": "24",
+            "reference": "ELLA240002"
+        },
+        {
+            "name": "Tablet Z",
+            "category": "EL",
+            "sub_category": "TB",
+            "year": "24",
+            "reference": "ELTB240003"
+        }
+    ]
+}
