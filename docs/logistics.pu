@@ -1,0 +1,33 @@
+@startuml(id=logistics)
+
+    interface SiteArea {}
+    class DeliveryPlatform {}
+    class StorageSpace {}
+
+    DeliveryPlatform .up.|> SiteArea
+    StorageSpace .up.|> SiteArea
+
+    class Container {}
+    class SubContainer {}
+
+    StorageSpace --> Container
+    Container --> SubContainer
+
+    class Location {}
+    class Site {}
+
+    Site -up-|> Location
+    Site -left-o SiteArea
+
+    class Carrier {}
+    class Conveyor {}
+
+    Site --> Carrier
+    Site --> Conveyor
+
+    class SequenceSystem {}
+    class SimulationFactory {}
+    class ReferenceManager {}
+    class MonitoringStats {}
+
+@enduml
