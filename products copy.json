@@ -1,0 +1,41 @@
+{
+    "products": {
+        "EL":
+        {
+            "PH":
+            {
+                "24":
+                [
+                    {
+                        "name": "Smartphone X",
+                        "id": "0001"
+                    },
+                    {
+                        "name": "Smartphone Z",
+                        "id": "0002"
+                    }
+                ]
+            },
+            "LA":
+            {
+                "24":
+                [
+                    {
+                        "name": "Laptop Y",
+                        "id": "0001"
+                    }
+                ]
+            },
+            "EL":
+            {
+                "24":
+                [
+                    {
+                        "name": "Tablet Z",
+                        "id": "0001"
+                    }
+                ]
+            }
+        }
+    }
+}

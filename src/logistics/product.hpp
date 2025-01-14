@@ -4,7 +4,7 @@
     #include "reference.hpp"
     #include <string>
 
-    class Product {
+    class ProductReference {
         std::string reference;
     };
 

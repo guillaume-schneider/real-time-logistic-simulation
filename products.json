@@ -1,25 +1,37 @@
 {
+    "counters": {
+        "EL-LA": 1,
+        "EL-PH": 2,
+        "EL-TB": 1
+    },
     "products": [
         {
+            "category": "EL",
             "name": "Smartphone X",
-            "category": "EL",
+            "reference": "ELPH240001",
             "sub_category": "PH",
-            "year": "24",
-            "reference": "ELPH240001"
+            "year": "24"
         },
         {
+            "category": "EL",
+            "name": "Smartphone Z",
+            "reference": "ELPH240002",
+            "sub_category": "PH",
+            "year": "24"
+        },
+        {
+            "category": "EL",
             "name": "Laptop Y",
-            "category": "EL",
+            "reference": "ELLA240001",
             "sub_category": "LA",
-            "year": "24",
-            "reference": "ELLA240002"
+            "year": "24"
         },
         {
-            "name": "Tablet Z",
             "category": "EL",
+            "name": "Tablet Z",
+            "reference": "ELTB240001",
             "sub_category": "TB",
-            "year": "24",
-            "reference": "ELTB240003"
+            "year": "24"
         }
     ]
 }

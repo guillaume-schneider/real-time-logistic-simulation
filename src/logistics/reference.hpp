@@ -6,10 +6,11 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 using json = nlohmann::json;
 
-struct Product {
+struct ProductReference {
     std::string name;
     std::string category;
     std::string sub_category;
@@ -20,22 +21,44 @@ struct Product {
 class ReferenceManager {
 private:
     std::string m_db_file;
-    json m_database;
-    std::vector<Product> m_products;
+    std::vector<ProductReference> m_products;
+    std::unordered_map<std::string, int> m_counters;
+
+    ProductReference parseJsonProduct(json jsonReference) {
+        ProductReference result{};
+        result.name = jsonReference["name"];
+        result.category = jsonReference["category"];
+        result.sub_category = jsonReference["sub_category"];
+        result.year = jsonReference["year"];
+        result.reference = jsonReference["reference"];
+        return result;
+    }
+
+    void parseJson(json& database) {
+        for (const auto& product : database["product"]) {
+            m_products.push_back(parseJsonProduct(product));
+        }
+
+        for (const auto& counter : database["counters"]) {
+            m_counters[counter] = database[counter];
+        }
+    }
 
     void loadDatabase() {
         std::ifstream file(m_db_file);
+        json database;
         if (file.is_open()) {
             try {
-                file >> m_database;
+                file >> database;
+                parseJson(database);
             } catch (...) {
-                m_database["products"] = json::array();
-                m_database["counters"] = json::object();
+                std::cout << "Json Product Reference Error: " 
+                    << "Can\'t open " << m_db_file << std::endl;
             }
             file.close();
         } else {
-            m_database["products"] = json::array();
-            m_database["counters"] = json::object();
+            std::cout << "Json Product Reference Error: " 
+                << m_db_file << "doesn\'t exists." << std::endl;
         }
     }
 
@@ -43,15 +66,12 @@ private:
         std::string key = category + "-" + sub_category;
 
         // Check if the key exists, if not initialize it to 0
-        if (m_database["counters"].find(key) == m_database["counters"].end()) {
-            m_database["counters"][key] = 0;
+        if (m_counters.find(key) == m_counters.end()) {
+            m_counters[key] = 0;
         }
 
-        // Safely increment the counter
-        int counter = m_database["counters"][key].get<int>();
-        m_database["counters"][key] = counter + 1;
-
-        return counter + 1;
+        m_counters[key] += 1;
+        return m_counters[key];
     }
 
     std::string generateReference(const std::string& category, const std::string& sub_category, const std::string& year) {
@@ -70,25 +90,25 @@ public:
 
     std::string addProduct(const std::string& name, const std::string& category, const std::string& sub_category, const std::string& year) {
         std::string reference = generateReference(category, sub_category, year);
-        json product = {
-            {"name", name},
-            {"category", category},
-            {"sub_category", sub_category},
-            {"year", year},
-            {"reference", reference}
-        };
-        m_database["products"].push_back(product);
+        // json product = {
+        //     {"name", name},
+        //     {"category", category},
+        //     {"sub_category", sub_category},
+        //     {"year", year},
+        //     {"reference", reference}
+        // };
+        // m_database["products"].push_back(product);
         m_products.push_back({name, category, sub_category, year, reference});
         return reference;
     }
 
-    json findProductByReference(const std::string& reference) {
-        for (const auto& product : m_database["products"]) {
-            if (product["reference"] == reference) {
+    ProductReference findProductByReference(const std::string& reference) {
+        for (const auto& product : m_products) {
+            if (product.reference == reference) {
                 return product;
             }
         }
-        return nullptr;
+        return ProductReference{};
     }
 
     void saveToJson(const std::string& filename) {
@@ -101,6 +121,10 @@ public:
                 {"year", product.year},
                 {"reference", product.reference}
             });
+        }
+
+        for (const auto& pair : m_counters) {
+            jsonData["counters"][pair.first] = pair.second;
         }
 
         std::ofstream file(filename);
@@ -127,6 +151,10 @@ public:
                     item["year"].get<std::string>(),
                     item["reference"].get<std::string>()
                 });
+            }
+
+            for (const auto& [key, count] : jsonData["counters"].items()) {
+                m_counters[key] = count;
             }
             file.close();
         }

@@ -23,7 +23,7 @@ int main (void) {
     ReferenceManager newManager;
 
     // Load products from JSON file
-    newManager.loadFromJson("../products.json");
+    newManager.loadFromJson("products.json");
 
     // Display products
     newManager.displayProducts();
