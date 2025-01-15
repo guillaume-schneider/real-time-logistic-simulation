@@ -1,34 +1,38 @@
 #include <iostream>
-#include <thread>
+#include "logistics/action.hpp"
 #include <chrono>
 
-void loadingBarAsync(int totalSteps, int delayMilliseconds) {
-    const int barWidth = 50;
-    for (int step = 0; step <= totalSteps; ++step) {
-        float progress = static_cast<float>(step) / totalSteps;
-        std::cout << "[";
-        int pos = static_cast<int>(barWidth * progress);
-        for (int i = 0; i < barWidth; ++i) {
-            if (i < pos) std::cout << "=";
-            else if (i == pos) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(progress * 100.0) << " %\r";
-        std::cout.flush();
-        std::this_thread::sleep_for(std::chrono::milliseconds(delayMilliseconds));
-    }
-    std::cout << std::endl;
-}
-
-void backgroundTask() {
-    // Exemple d'une tâche en arrière-plan
-    std::this_thread::sleep_for(std::chrono::seconds(5)); // Simule une tâche de 5 secondes
-}
-
 int main() {
-    std::thread loadingThread(loadingBarAsync, 100, 50);
-    backgroundTask(); // Effectue une autre tâche pendant le chargement
-    loadingThread.join(); // Attend que la barre de chargement se termine
-    std::cout << "Tâche terminée !" << std::endl;
+    // Clear the console
+    std::cout << "\33[2J";
+
+    // Create tasks
+    std::vector<std::shared_ptr<Task>> tasks;
+    tasks.push_back(std::make_shared<Task>(0)); // Task 0
+    tasks.push_back(std::make_shared<Task>(1)); // Task 1
+    tasks.push_back(std::make_shared<Task>(2)); // Task 2
+
+    // Add actions to each task
+    tasks[0]->addAction(std::make_shared<Move>(3000)); // 3 seconds
+    tasks[1]->addAction(std::make_shared<Move>(5000)); // 5 seconds
+    tasks[2]->addAction(std::make_shared<Move>(7000)); // 7 seconds
+
+    // Mutex for synchronized output
+    std::mutex outputMutex;
+
+    // Run tasks in parallel
+    std::vector<std::thread> threads;
+    for (const auto& task : tasks) {
+        threads.emplace_back(&Task::execute, task, std::ref(outputMutex));
+    }
+
+    // Wait for all tasks to complete
+    for (auto& thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+
+    std::cout << "\nAll tasks completed!\n";
     return 0;
 }

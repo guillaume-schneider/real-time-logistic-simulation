@@ -11,7 +11,7 @@
         std::vector<Carrier> carrier;
     };
 
-    class SiteArea {};
+    class SiteArea : public Location {};
 
     class DeliveryPlatform : public SiteArea
     {

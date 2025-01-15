@@ -28,17 +28,7 @@ file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-include(FetchContent)
-FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.2  # Replace with the desired version
-)
-FetchContent_MakeAvailable(nlohmann_json)
-
-
-# Link libraries (e.g., nlohmann_json)
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+set(FETCHCONTENT_QUIET OFF)
 
 include(FetchContent)
 
@@ -46,6 +36,8 @@ FetchContent_Declare(
     date
     GIT_REPOSITORY https://github.com/HowardHinnant/date.git
     GIT_TAG        master # You can use a specific tag like v3.0.0
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
 )
 
 FetchContent_MakeAvailable(date)
