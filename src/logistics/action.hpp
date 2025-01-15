@@ -57,17 +57,19 @@ private:
     }
 
     void loadingBar(int totalDuration, std::atomic<bool>& isRunning, std::atomic<bool>& actionsComplete, std::mutex& outputMutex) const {
-        const int barWidth = 50;
-        float progress = 0.0f;
-
+        const int barWidth = 50; // Width of the loading bar
         auto startTime = std::chrono::steady_clock::now();
+
         while (isRunning.load()) {
-            // Calculate elapsed time
+            // Calculate true elapsed time since the start
             auto now = std::chrono::steady_clock::now();
-            progress = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()) / totalDuration;
+            float elapsedTime = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count());
+
+            // Calculate progress based on elapsed time
+            float progress = elapsedTime / totalDuration;
             progress = std::min(progress, 1.0f); // Cap progress to 100%
 
-            // Build the loading bar
+            // Build the loading bar string
             std::string bar = "[";
             int pos = static_cast<int>(barWidth * progress);
             for (int i = 0; i < barWidth; ++i) {
@@ -77,27 +79,23 @@ private:
             }
             bar += "] " + std::to_string(int(progress * 100)) + " %";
 
-            // Display the bar (use mutex for synchronized output)
+            // Display the bar (synchronized output)
             {
                 std::lock_guard<std::mutex> lock(outputMutex);
-                std::cout << "\33[" << (id + 1) << ";1H" << bar << std::flush; // Position bar on the correct line
+                std::cout << "\33[" << (id + 1) << ";1H" << bar << std::flush; // Move to the correct line
             }
 
-            // Pause at 100% if actions are not complete
-            if (progress >= 1.0f && !actionsComplete.load()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                continue;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-            // Exit when actions are complete and progress is 100%
+            // Exit if progress reaches 100% and actions are complete
             if (progress >= 1.0f && actionsComplete.load()) {
                 break;
             }
+
+            // Sleep for a short duration (smooth animation)
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            startTime -= std::chrono::milliseconds(50);
         }
 
-        // Mark as complete
+        // Ensure the bar is fully filled when finished
         {
             std::lock_guard<std::mutex> lock(outputMutex);
             std::cout << "\33[" << (id + 1) << ";1H[";
