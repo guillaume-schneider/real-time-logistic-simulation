@@ -1,32 +1,34 @@
-#include "logistics/reference.hpp"
 #include <iostream>
+#include <thread>
+#include <chrono>
 
+void loadingBarAsync(int totalSteps, int delayMilliseconds) {
+    const int barWidth = 50;
+    for (int step = 0; step <= totalSteps; ++step) {
+        float progress = static_cast<float>(step) / totalSteps;
+        std::cout << "[";
+        int pos = static_cast<int>(barWidth * progress);
+        for (int i = 0; i < barWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << int(progress * 100.0) << " %\r";
+        std::cout.flush();
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayMilliseconds));
+    }
+    std::cout << std::endl;
+}
 
-int main (void) {
+void backgroundTask() {
+    // Exemple d'une tâche en arrière-plan
+    std::this_thread::sleep_for(std::chrono::seconds(5)); // Simule une tâche de 5 secondes
+}
 
-    // Create a ProductReferenceManager
-    ReferenceManager manager;
-
-    // Add some products
-    manager.addProduct("Smartphone X", "EL", "PH", "24");
-    manager.addProduct("Smartphone Z", "EL", "PH", "24");
-    manager.addProduct("Laptop Y", "EL", "LA", "24");
-    manager.addProduct("Tablet Z", "EL", "TB", "24");
-
-    std::cout << "display 1st manager: " << std::endl;
-    manager.displayProducts();
-
-    // Save products to JSON file
-    manager.saveToJson("products.json");
-
-    // Clear current product list
-    ReferenceManager newManager;
-
-    // Load products from JSON file
-    newManager.loadFromJson("products.json");
-
-    // Display products
-    newManager.displayProducts();
-
+int main() {
+    std::thread loadingThread(loadingBarAsync, 100, 50);
+    backgroundTask(); // Effectue une autre tâche pendant le chargement
+    loadingThread.join(); // Attend que la barre de chargement se termine
+    std::cout << "Tâche terminée !" << std::endl;
     return 0;
 }
