@@ -1,38 +1,42 @@
-#include <iostream>
+#include "logistics/actionner.hpp"
+#include "logistics/task.hpp"
 #include "logistics/action.hpp"
-#include <chrono>
+#include <vector>
+#include <memory>
 
 int main() {
-    // Clear the console
     std::cout << "\33[2J";
 
-    // Create tasks
-    std::vector<std::shared_ptr<Task>> tasks;
-    tasks.push_back(std::make_shared<Task>(0)); // Task 0
-    tasks.push_back(std::make_shared<Task>(1)); // Task 1
-    tasks.push_back(std::make_shared<Task>(2)); // Task 2
-
-    // Add actions to each task
-    tasks[0]->addAction(std::make_shared<Move>(3000)); // 3 seconds
-    tasks[1]->addAction(std::make_shared<Move>(5000)); // 5 seconds
-    tasks[2]->addAction(std::make_shared<Move>(7000)); // 7 seconds
-
-    // Mutex for synchronized output
     std::mutex outputMutex;
 
-    // Run tasks in parallel
-    std::vector<std::thread> threads;
-    for (const auto& task : tasks) {
-        threads.emplace_back(&Task::execute, task, std::ref(outputMutex));
+    std::vector<std::shared_ptr<Actionner>> actionners;
+    for (int i = 0; i < 3; ++i) {
+        actionners.push_back(std::make_shared<Actionner>(i, "Actionner" + std::to_string(i), outputMutex));
     }
 
-    // Wait for all tasks to complete
-    for (auto& thread : threads) {
-        if (thread.joinable()) {
-            thread.join();
+    std::vector<std::shared_ptr<Actionnable>> actions = {
+        std::make_shared<Move>(3000),
+        std::make_shared<Move>(5000),
+        std::make_shared<Move>(2000)
+    };
+
+    std::vector<Task> tasks = {
+        Task("Move 1", actions[0]),
+        Task("Move 2", actions[1]),
+        Task("Move 2", actions[2])
+    };
+
+    // Assigner les tâches aux Actionners disponibles
+    for (size_t i = 0; i < tasks.size(); ++i) {
+        auto& actionner = actionners[i];
+        if (!actionner->busy()) {
+            actionner->submitTask(tasks[i].getTaskFunction(), tasks[i].getDuration(), tasks[i].getName());
         }
     }
 
-    std::cout << "\nAll tasks completed!\n";
+    // Attendre que toutes les tâches soient terminées
+    std::cout << "Press Enter to exit...\n";
+    std::cin.get();
+
     return 0;
 }
