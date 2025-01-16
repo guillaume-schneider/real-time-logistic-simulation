@@ -13,38 +13,37 @@ private:
     std::vector<std::shared_ptr<Actionnable>> m_actions;
 
 public:
-    // Constructor with task name
+    Task() = default;
+
     explicit Task(const std::string& name)
         : m_name(name) {}
 
-    // Add an action via shared_ptr
     void addAction(std::shared_ptr<Actionnable> action) {
         m_actions.push_back(std::move(action));
     }
 
-    // Variadic constructor to add multiple actions
     template <typename... Actions>
     Task(const std::string& name, std::shared_ptr<Actions>... actions)
         : m_name(name) {
-        (addAction(actions), ...); // Use fold expression for multiple shared_ptr
+        (addAction(actions), ...);
     }
 
-    // Execute the task
     void execute() const {
         int duration = getDuration();
-        std::cout << "Executing task '" << m_name << "' for " << duration << " ms.\n";
         for (const auto& action : m_actions) {
-            action->execute(); // Execute each action
+            action->execute();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(duration));
     }
 
-    // Get a callable function for the task
     std::function<void()> getTaskFunction() const {
         return [this]() { this->execute(); };
     }
 
-    // Calculate the total duration of all actions
+    std::vector<std::shared_ptr<Actionnable>> getActions() {
+        return m_actions;
+    }
+
     int getDuration() const {
         int duration = 0;
         for (const auto& action : m_actions) {
@@ -53,8 +52,8 @@ public:
         return duration;
     }
 
-    std::string getName() { return m_name; }
+    std::string getName() const { return m_name; }
 };
 
 
-#endif // TASK_HPP_
+#endif

@@ -30,7 +30,7 @@ int main() {
     for (size_t i = 0; i < tasks.size(); ++i) {
         auto& actionner = actionners[i];
         if (!actionner->busy()) {
-            actionner->submitTask(tasks[i].getTaskFunction(), tasks[i].getDuration(), tasks[i].getName());
+            actionner->submitTask(tasks[i]);
         }
     }
 

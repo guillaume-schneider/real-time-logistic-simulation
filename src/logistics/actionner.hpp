@@ -9,6 +9,7 @@
 #include <condition_variable>
 #include <chrono>
 #include <string>
+#include "task.hpp"
 
 class Actionner {
 private:
@@ -20,49 +21,45 @@ private:
     std::mutex taskMutex;                   // Mutex pour synchronisation
     std::condition_variable taskCondition;  // Condition pour attendre une nouvelle tâche
 
-    std::function<void()> currentTask;      // La tâche actuelle à exécuter
-    int taskDuration = 0;                   // Durée de la tâche en millisecondes
-    std::string m_taskDescription;
+    Task m_currentTask;
     std::mutex& outputMutex;                // Mutex global pour l'affichage
 
     // Méthode exécutée par le thread
     void threadLoop() {
         while (!stopThread) {
             std::unique_lock<std::mutex> lock(taskMutex);
-            taskCondition.wait(lock, [this]() { return currentTask || stopThread; });
+            taskCondition.wait(lock, [this]() { return !m_currentTask.getActions().empty() || stopThread; });
 
             if (stopThread) break;
 
-            if (currentTask) {
+            if (!m_currentTask.getActions().empty()) {
                 isBusy = true; // Marquer comme occupé
 
                 // Lancer la barre de chargement
-                std::thread loadingThread(&Actionner::loadingBar, this, taskDuration);
-                currentTask(); // Exécuter la tâche
+                std::thread loadingThread(&Actionner::loadingBar, this);
+                // m_currentTask.execute(); // Exécuter la tâche
 
                 // Fin de la tâche
                 isBusy = false;
-                currentTask = nullptr;
 
                 // Attendre la fin de la barre de chargement
                 if (loadingThread.joinable()) {
                     loadingThread.join();
                 }
+                stopThread = true;
             }
         }
     }
 
     // Afficher une barre de chargement sur une ligne spécifique
-    void loadingBar(int duration) const {
+    void loadingBar() const {
         const int barWidth = 50;
         auto startTime = std::chrono::steady_clock::now();
 
         while (true) {
             auto now = std::chrono::steady_clock::now();
-            float elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count();
-
-            float progress = elapsedTime / duration;
-            progress = std::min(progress, 1.0f);
+            float elapsedTime = static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count());
+            float progress = elapsedTime / m_currentTask.getDuration();
 
             std::string bar = "[";
             int pos = static_cast<int>(barWidth * progress);
@@ -76,12 +73,13 @@ private:
             // Afficher la barre de chargement avec le nom
             {
                 std::lock_guard<std::mutex> lock(outputMutex);
-                std::cout << "\33[" << (id + 1) << ";1H" << m_name << ": " << bar << " - " << m_taskDescription << "   \r";
+                std::cout << "\33[" << (id + 1) << ";1H" << m_name << ": " << bar << " - " << m_currentTask.getName() << "   \r";
                 std::cout.flush();
             }
 
             if (progress >= 1.0f) break;
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            startTime -= std::chrono::milliseconds(50);
         }
 
         {
@@ -108,7 +106,7 @@ public:
     }
 
     // Soumettre une tâche à l'Actionner
-    bool submitTask(std::function<void()> task, int duration, std::string description) {
+    bool submitTask(Task task) {
         if (isBusy) {
             std::cerr << "Actionner " << id << " is currently busy.\n";
             return false;
@@ -116,9 +114,7 @@ public:
 
         {
             std::lock_guard<std::mutex> lock(taskMutex);
-            currentTask = std::move(task);
-            taskDuration = duration;
-            m_taskDescription = description;
+            m_currentTask = task;
         }
         taskCondition.notify_one();
         return true;
