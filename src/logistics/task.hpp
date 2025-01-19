@@ -11,6 +11,7 @@ class Task {
 private:
     std::string m_name;
     std::vector<std::shared_ptr<Actionnable>> m_actions;
+    bool m_hasExecuted = false;
 
 public:
     Task() = default;
@@ -28,16 +29,17 @@ public:
         (addAction(actions), ...);
     }
 
-    void execute() const {
-        int duration = getDuration();
-        for (const auto& action : m_actions) {
-            action->execute();
+    void execute() {
+        if (!m_hasExecuted) {
+            for (const auto& action : m_actions) {
+                action->execute();
+            }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(duration));
+        m_hasExecuted = true;
     }
 
-    std::function<void()> getTaskFunction() const {
-        return [this]() { this->execute(); };
+    bool hasExecuted() {
+        return m_hasExecuted;
     }
 
     std::vector<std::shared_ptr<Actionnable>> getActions() {

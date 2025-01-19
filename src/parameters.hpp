@@ -4,19 +4,21 @@
 #include <iostream>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "config.hpp"
 
 struct Config {
-    float timescale = 1.0f;
+    float timescale;
+
+    Config() : timescale(1.0f) {}
 };
 
 class ConfigParser {
 public:
-    static void parseConfig(const std::string& filename, Config& config) {
+    static Config parseConfig(const std::string& filename) {
+        Config config;
         std::ifstream file(filename);
         if (!file.is_open()) {
             std::cerr << "Error: Could not open config file: " << filename << std::endl;
-            return;
+            return config;
         }
 
         try {
@@ -45,10 +47,13 @@ public:
             // if (jsonData.contains("debugMode") && jsonData["debugMode"].is_boolean()) {
             //     config.debugMode = jsonData["debugMode"].get<bool>();
             // }
+            return config;
 
         } catch (const std::exception& e) {
             std::cerr << "Error parsing config file: " << e.what() << std::endl;
         }
+
+        return config;
     }
 };
 
