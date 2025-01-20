@@ -3,16 +3,16 @@
 
 #include <string>
 #include "product_reference.hpp"
-#include "coordinates.hpp"
+#include "../logistics/coordinates.hpp"
 
 class Product {
 private:
     std::string m_serialNumber;
-    ProductReference m_reference;
+    std::string m_reference;
     Point2D m_coordinates;
 public:
     Product() = default;
-    Product(std::string serialNumber, ProductReference reference,
+    Product(std::string serialNumber, std::string reference,
         Point2D coordinates) 
         : m_serialNumber(serialNumber), m_reference(reference),
             m_coordinates(coordinates) {}
@@ -29,7 +29,7 @@ public:
     ~Product() = default;
 
     std::string getSerialNumber() const { return m_serialNumber; }
-    ProductReference getProductReference() const { return m_reference; }
+    std::string getProductReference() const { return m_reference; }
     void setCoordinates(const Point2D coordinates) { m_coordinates = coordinates; }
     Point2D getCoordinates() const { return m_coordinates; }
 };

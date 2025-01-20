@@ -50,20 +50,6 @@ public:
                 time.seconds = jsonData["seconds"].get<int>();
                 config.time = time;
             }
-
-            // // Parse and validate maxThreads
-            // if (jsonData.contains("maxThreads") && jsonData["maxThreads"].is_number_integer()) {
-            //     config.maxThreads = jsonData["maxThreads"].get<int>();
-            //     if (config.maxThreads <= 0) {
-            //         std::cerr << "Warning: maxThreads must be greater than 0. Resetting to default (4)." << std::endl;
-            //         config.maxThreads = 4;
-            //     }
-            // }
-
-            // // Parse debugMode
-            // if (jsonData.contains("debugMode") && jsonData["debugMode"].is_boolean()) {
-            //     config.debugMode = jsonData["debugMode"].get<bool>();
-            // }
             return config;
 
         } catch (const std::exception& e) {

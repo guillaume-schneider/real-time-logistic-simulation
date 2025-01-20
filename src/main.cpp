@@ -5,6 +5,8 @@
 #include <memory>
 #include <thread>
 #include "parameters.hpp"
+#include "product/product_database.hpp"
+#include "product/reference_manager.hpp"
 
 
 long long convertTimeInSeconds(const Time& time) {
@@ -25,53 +27,94 @@ void verifyTimescale(Config& config) {
 
 
 int main() {
-    std::cout << "\33[2J";
+    ReferenceManager& refManager = ReferenceManager::getInstance();
+    refManager.loadFromJson("references.json");
 
-    std::mutex outputMutex;
-    ConfigParser parser;
-    Config config = parser.parseConfig("config.json");
-    auto realDuration = convertTimeInSeconds(config.time);
-    verifyTimescale(config);
-
-    std::vector<std::shared_ptr<Actionner>> actionners;
-
-    std::shared_ptr<Actionner> actionner = std::make_shared<Actionner>(1, "Actionner 1", outputMutex, config);
-    std::shared_ptr<Actionner> actionner2 = std::make_shared<Actionner>(2, "Actionner 2", outputMutex, config);
-
-    std::vector<std::shared_ptr<Actionnable>> actions = {
-        std::make_shared<Move>(3000),
-        std::make_shared<Move>(5000),
-        std::make_shared<Move>(2000)
-    };
-
-    std::vector<std::shared_ptr<Task>> tasks = {
-        std::make_shared<Task>("Move 1", actions[0]),
-        std::make_shared<Task>("Move 2", actions[1]),
-        std::make_shared<Task>("Move 3", actions[2])
-    };
-
-    for (size_t i = 0; i < tasks.size(); ++i) {
-        // if (!actionner->busy()) {
-            actionner->submitTask(tasks[i]);
-        // }
+    ProductDatabase& dbProduct = ProductDatabase::getInstance();
+    if (!dbProduct.init("products.json", refManager)) {
+        std::cerr << "Failed to initialize the database.\n";
+        return 1;
     }
 
-    for (size_t i = 0; i < tasks.size(); ++i) {
-        // if (!actionner->busy()) {
-            actionner2->submitTask(tasks[i]);
-        // }
+    // 3) Créer des produits par référence (en lot)
+    //    createProduct(reference, number)
+    dbProduct.createProduct("ELPH240002", 3);   // Crée 3 produits
+    dbProduct.createProduct("ELPH240001", 2);   // Crée 2 produits
+    dbProduct.createProduct("XYZ123", 1);       // Crée 1 produit
+
+    // 5) Lister tous les produits
+    std::cout << "\n--- List of all products ---\n";
+    dbProduct.listProducts();
+    std::cout << "Total products: " << dbProduct.getProductCount() << "\n\n";
+
+    // 6) Lister les produits par catégorie
+    std::cout << "\n--- Products by category ---\n";
+    dbProduct.listProductsByCategory();
+
+    // 7) Rechercher un produit par serial number (exemple)
+    //    Selon la logique de createProduct, les serials 
+    //    peuvent ressembler à "ELPH240002_1", "ELPH240002_2", etc.
+    Product* found = dbProduct.findProduct("ELPH2400021");
+    if (found) {
+        std::cout << "\nProduct ELPH2400021 found: "
+                  << found->getSerialNumber() << " / "
+                  << found->getProductReference() << "\n";
+    } else {
+        std::cerr << "\nProduct ELPH2400021 not found.\n";
     }
 
-    auto simDuration = realDuration / config.timescale;
-    auto start = std::chrono::steady_clock::now();
-    while (true)
-    {
-        auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
-        if (elapsed >= simDuration) break;
+    // 8) Supprimer un produit par son numéro de série
+    dbProduct.removeProduct("ELPH2400021");
+
+    // 9) Vérifier que la suppression a bien eu lieu
+    found = dbProduct.findProduct("ELPH2400021");
+    if (!found) {
+        std::cout << "Removal confirmed: ELPH240002_1 not found.\n";
+    } else {
+        std::cerr << "Error: ELPH240002_1 still found after removal.\n";
     }
 
-    // Attendre que toutes les tâches soient terminées
+    // 10) Lister les produits restants
+    std::cout << "\n--- List of products after removal ---\n";
+    dbProduct.listProducts();
+
+    // std::cout << "\33[2J";
+
+    // std::mutex outputMutex;
+    // ConfigParser parser;
+    // Config config = parser.parseConfig("config.json");
+    // auto realDuration = convertTimeInSeconds(config.time);
+    // verifyTimescale(config);
+
+    // std::shared_ptr<Actionner> actionner = std::make_shared<Actionner>(1, "Actionner 1", outputMutex, config);
+    // std::shared_ptr<Actionner> actionner2 = std::make_shared<Actionner>(2, "Actionner 2", outputMutex, config);
+
+    // std::vector<std::shared_ptr<Actionnable>> actions = {
+    //     std::make_shared<Move>(3000),
+    //     std::make_shared<Move>(5000),
+    //     std::make_shared<Move>(2000)
+    // };
+
+    // std::vector<std::shared_ptr<Task>> tasks = {
+    //     std::make_shared<Task>("Move 1", actions[0]),
+    //     std::make_shared<Task>("Move 2", actions[1]),
+    //     std::make_shared<Task>("Move 3", actions[2])
+    // };
+
+    // for (auto& task : tasks) {
+    //     actionner->submitTask(task);
+    //     actionner2->submitTask(task);
+    // }
+
+    // auto simDuration = realDuration / config.timescale;
+    // auto start = std::chrono::steady_clock::now();
+    // while (true)
+    // {
+    //     auto now = std::chrono::steady_clock::now();
+    //     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+    //     if (elapsed >= simDuration) break;
+    // }
+
     // std::cout << "Press Enter to exit...\n";
     // std::cin.get();
 

@@ -2,7 +2,7 @@
 #define ORDER_HPP_
 
 #include "product_reference.hpp"
-#include "location.hpp"
+#include "../logistics/location.hpp"
 #include <string>
 #include "date/date.h"
 
@@ -26,7 +26,7 @@ struct Author {
 
 struct Order {
 public:
-    ProductReference reference;      // Référence du produit
+    std::string reference;      // Référence du produit
     std::string serialNumber;
     date::sys_seconds order_time;    // Timestamp de commande
     date::sys_seconds delivery_time; // Timestamp de livraison
@@ -34,7 +34,7 @@ public:
     Address delivery_address;                            // Adresse de livraison
 
     Order() = default;
-    Order(const ProductReference& ref, 
+    Order(const std::string& ref, 
             const date::sys_seconds& orderTimestamp,
             const date::sys_seconds& deliveryTimestamp,
             const Author& orderAuthor, 
@@ -48,7 +48,7 @@ public:
     std::string toString() const {
             std::ostringstream oss;
             oss << "Order Information:\n"
-                << "Reference: " << reference.getReference() << "\n"
+                << "Reference: " << reference << "\n"
                 << "Order Timestamp: " << date::format("%F %T", order_time) << "\n"
                 << "Delivery Timestamp: " << date::format("%F %T", delivery_time) << "\n"
                 << "Author: " << author.toString() << "\n"

@@ -13,21 +13,26 @@ using json = nlohmann::json;
 
 class ReferenceManager {
 private:
+    ReferenceManager() = default;
+
     std::string m_db_file;
     std::vector<ProductReference> m_products;
     std::unordered_map<std::string, int> m_counters;
 
     void parseJson(json& database);
-    void loadDatabase();
     int getNextCounter(const std::string& category, const std::string& sub_category);
     std::string generateReference(const std::string& category, const std::string& sub_category, const std::string& year);
 
 public:
-    ReferenceManager() = default;
-    ReferenceManager(const std::string& dbFile);
+    static ReferenceManager& getInstance() {
+        static ReferenceManager instance;
+        return instance;
+    }
+    ReferenceManager(const ReferenceManager&) = delete;
+    ReferenceManager operator=(const ReferenceManager&) = delete;
 
     std::string addProduct(const std::string& name, const std::string& category, const std::string& sub_category, const std::string& year);
-    ProductReference findProductByReference(const std::string& reference);
+    ProductReference* findProductByReference(const std::string& reference);
     void saveToJson(const std::string& filename);
     void loadFromJson(const std::string& filename);
     void displayProducts() const;

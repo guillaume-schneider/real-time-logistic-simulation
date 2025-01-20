@@ -1,11 +1,6 @@
 #include "reference_manager.hpp"
 #include <stdexcept>
 
-// Constructor
-ReferenceManager::ReferenceManager(const std::string& dbFile) : m_db_file(dbFile) {
-    loadDatabase();
-}
-
 void ReferenceManager::parseJson(json& database) {
     for (const auto& item : database["products"]) {
         m_products.push_back({
@@ -20,23 +15,6 @@ void ReferenceManager::parseJson(json& database) {
     for (const auto& [key, count] : database["counters"].items()) {
         m_counters[key] = count;
     }
-}
-
-void ReferenceManager::loadDatabase() {
-    std::ifstream file(m_db_file);
-    if (!file.is_open()) {
-        std::cout << "Json Product Reference Error: " << m_db_file << " doesn't exist or can't be opened." << std::endl;
-        return;
-    }
-
-    json database;
-    try {
-        file >> database;
-        parseJson(database);
-    } catch (const std::exception& e) {
-        std::cout << "Error reading JSON: " << e.what() << std::endl;
-    }
-    file.close();
 }
 
 int ReferenceManager::getNextCounter(const std::string& category, const std::string& sub_category) {
@@ -64,13 +42,13 @@ std::string ReferenceManager::addProduct(const std::string& name, const std::str
     return reference;
 }
 
-ProductReference ReferenceManager::findProductByReference(const std::string& reference) {
-    for (const auto& product : m_products) {
+ProductReference* ReferenceManager::findProductByReference(const std::string& reference) {
+    for (auto& product : m_products) {
         if (product.getReference() == reference) {
-            return product;
+            return &product;
         }
     }
-    return ProductReference{};
+    return nullptr;
 }
 
 void ReferenceManager::saveToJson(const std::string& filename) {
@@ -100,14 +78,21 @@ void ReferenceManager::saveToJson(const std::string& filename) {
 }
 
 void ReferenceManager::loadFromJson(const std::string& filename) {
+    m_db_file = filename;
     std::ifstream file(filename);
-    if (file.is_open()) {
-        json jsonData;
-        file >> jsonData;
-
-        parseJson(jsonData);
-        file.close();
+    if (!file.is_open()) {
+        std::cout << "Json Product Reference Error: " << m_db_file << " doesn't exist or can't be opened." << std::endl;
+        return;
     }
+
+    json database;
+    try {
+        file >> database;
+        parseJson(database);
+    } catch (const std::exception& e) {
+        std::cout << "Error reading JSON: " << e.what() << std::endl;
+    }
+    file.close();
 }
 
 void ReferenceManager::displayProducts() const {
