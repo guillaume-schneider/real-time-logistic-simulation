@@ -3,7 +3,7 @@
 
 #include <string>
 #include <sstream>
-#include <cmath>
+#include "coordinates.hpp"
 
 struct Address {
     std::string street;  // Street address
@@ -35,19 +35,6 @@ struct Address {
         return oss.str();
     }
 };
-
-struct Point2D {
-    double x, y;
-    Point2D() : x(0), y(0) {}
-    Point2D(double x, double y) : x(x), y(y) {}
-};
-
-// Fonction pour calculer la distance entre deux points
-double calculatePointDistance(const Point2D& a, const Point2D& b) {
-    double dx = b.x - a.x;
-    double dy = b.y - a.y;
-    return std::sqrt(dx * dx + dy * dy);
-}
 
 class Location {
 public:

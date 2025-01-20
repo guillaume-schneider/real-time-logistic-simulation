@@ -7,19 +7,10 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include "product_reference.hpp"
 
 using json = nlohmann::json;
 
-// Product Reference Structure
-struct ProductReference {
-    std::string name;
-    std::string category;
-    std::string sub_category;
-    std::string year;
-    std::string reference;
-};
-
-// Reference Manager Class Declaration
 class ReferenceManager {
 private:
     std::string m_db_file;

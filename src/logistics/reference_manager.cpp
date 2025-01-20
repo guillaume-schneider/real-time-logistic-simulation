@@ -1,4 +1,4 @@
-#include "reference.hpp"
+#include "reference_manager.hpp"
 #include <stdexcept>
 
 // Constructor
@@ -66,7 +66,7 @@ std::string ReferenceManager::addProduct(const std::string& name, const std::str
 
 ProductReference ReferenceManager::findProductByReference(const std::string& reference) {
     for (const auto& product : m_products) {
-        if (product.reference == reference) {
+        if (product.getReference() == reference) {
             return product;
         }
     }
@@ -77,11 +77,11 @@ void ReferenceManager::saveToJson(const std::string& filename) {
     json jsonData;
     for (const auto& product : m_products) {
         jsonData["products"].push_back({
-            {"name", product.name},
-            {"category", product.category},
-            {"sub_category", product.sub_category},
-            {"year", product.year},
-            {"reference", product.reference}
+            {"name", product.getName()},
+            {"category", product.getCategory()},
+            {"sub_category", product.getSubCategory()},
+            {"year", product.getYear()},
+            {"reference", product.getReference()}
         });
     }
 
@@ -112,11 +112,11 @@ void ReferenceManager::loadFromJson(const std::string& filename) {
 
 void ReferenceManager::displayProducts() const {
     for (const auto& product : m_products) {
-        std::cout << "Name: " << product.name << "\n"
-                  << "Category: " << product.category << "\n"
-                  << "Sub-Category: " << product.sub_category << "\n"
-                  << "Year: " << product.year << "\n"
-                  << "Reference: " << product.reference << "\n"
+        std::cout << "Name: " << product.getName() << "\n"
+                  << "Category: " << product.getCategory() << "\n"
+                  << "Sub-Category: " << product.getSubCategory() << "\n"
+                  << "Year: " << product.getYear() << "\n"
+                  << "Reference: " << product.getReference() << "\n"
                   << "-----------------------\n";
     }
 }

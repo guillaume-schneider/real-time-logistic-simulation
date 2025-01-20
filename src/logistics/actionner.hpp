@@ -15,23 +15,22 @@
 #include "location.hpp"
 
 class Actionner {
-private:
+protected:
     int m_id;                                 // Identifiant de l'Actionner
     std::string m_name;
-    std::thread m_workerThread;               // Thread pour l'exécution
     std::atomic<bool> m_isBusy{false};        // Indique si l'Actionner est occupé
     std::atomic<bool> m_stopThread{false};    // Indique si le thread doit s'arrêter
     std::mutex m_taskMutex;                   // Mutex pour synchronisation
-    std::condition_variable m_taskCondition;  // Condition pour attendre une nouvelle tâche
-    std::condition_variable m_doneCondition;  // Condition pour attendre la fin d'une tâche
     Config m_config;
     Location m_currentLocation;
-    std::queue<Task> m_taskQueue;
-
-    Task m_currentTask;
     std::mutex& m_outputMutex;                // Mutex global pour l'affichage
+    std::thread m_workerThread;               // Thread pour l'exécution
+    std::queue<Task> m_taskQueue;
+    std::condition_variable m_doneCondition;  // Condition pour attendre la fin d'une tâche
+    std::condition_variable m_taskCondition;  // Condition pour attendre une nouvelle tâche
+    Task m_currentTask;
 
-    void threadLoop() {
+    virtual void threadLoop() {
         while (!m_stopThread) {
 
             if (m_taskQueue.size() > 0 && m_currentTask.hasExecuted()) {
@@ -144,7 +143,7 @@ public:
         m_outputMutex(other.m_outputMutex), m_config(other.m_config), 
             m_currentLocation(other.m_currentLocation) {}
 
-    ~Actionner() {
+    virtual ~Actionner() {
         m_stopThread = true;
         m_taskCondition.notify_all();
         if (m_workerThread.joinable()) {
@@ -163,7 +162,6 @@ public:
 
     bool submitTask(Task task) {
         if (!m_currentTask.hasExecuted() && !m_currentTask.getActions().empty()) {
-            std::cerr << "Actionner " << m_id << " is currently busy.\n";
             m_taskQueue.push(task);
             return false;
         }
