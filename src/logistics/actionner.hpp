@@ -81,9 +81,6 @@ protected:
 
         float simDurationMs = static_cast<float>(task->getDuration());
         float timescale     = m_config.timescale;
-        if (timescale <= 0.0f) {
-            timescale = 0.0001f;
-        }
 
         float realDurationMs = simDurationMs / timescale; 
 

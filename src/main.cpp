@@ -7,17 +7,33 @@
 #include "parameters.hpp"
 
 
+long long convertTimeInSeconds(const Time& time) {
+    long long totalSeconds = static_cast<long long>(time.days) * 86400
+                        + static_cast<long long>(time.hours) * 3600
+                        + static_cast<long long>(time.minutes) * 60
+                        + static_cast<long long>(time.seconds);
+    return totalSeconds;
+}
+
+
+void verifyTimescale(Config& config) {
+    if (config.timescale <= 0.0f) {
+        std::cerr << "Timescale cannot be negative or equal to 0." << std::endl;
+        config.timescale = 0.0001f;
+    } 
+}
+
+
 int main() {
     std::cout << "\33[2J";
 
     std::mutex outputMutex;
     ConfigParser parser;
     Config config = parser.parseConfig("config.json");
+    auto realDuration = convertTimeInSeconds(config.time);
+    verifyTimescale(config);
 
     std::vector<std::shared_ptr<Actionner>> actionners;
-    // for (int i = 0; i < 3; ++i) {
-    //     actionners.push_back(std::make_shared<Actionner>(i, "Actionner" + std::to_string(i), outputMutex, config));
-    // }
 
     std::shared_ptr<Actionner> actionner = std::make_shared<Actionner>(1, "Actionner 1", outputMutex, config);
     std::shared_ptr<Actionner> actionner2 = std::make_shared<Actionner>(2, "Actionner 2", outputMutex, config);
@@ -34,8 +50,6 @@ int main() {
         std::make_shared<Task>("Move 3", actions[2])
     };
 
-    // Assigner les tâches aux Actionners disponibles
-    auto start = std::chrono::steady_clock::now();
     for (size_t i = 0; i < tasks.size(); ++i) {
         // if (!actionner->busy()) {
             actionner->submitTask(tasks[i]);
@@ -48,19 +62,14 @@ int main() {
         // }
     }
 
-    while(true);
-
-    auto end = std::chrono::steady_clock::now();    
-    auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-
-    int hours = duration.count() / 3600;
-    int minutes = (duration.count() % 3600) / 60;
-    int seconds = duration.count() % 60;
-
-    std::cout << "Elapsed time: "
-              << hours << "h "
-              << minutes << "m "
-              << seconds << "s" << std::endl;
+    auto simDuration = realDuration / config.timescale;
+    auto start = std::chrono::steady_clock::now();
+    while (true)
+    {
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+        if (elapsed >= simDuration) break;
+    }
 
     // Attendre que toutes les tâches soient terminées
     // std::cout << "Press Enter to exit...\n";

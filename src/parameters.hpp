@@ -5,10 +5,18 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 
+struct Time {
+    int days;
+    int hours;
+    int minutes;
+    int seconds;
+    Time() : days(0), hours(0), minutes(1), seconds(0) {}
+};
+
 struct Config {
     float timescale;
-
-    Config() : timescale(1.0f) {}
+    Time time;
+    Config() : timescale(1.0f), time() {}
 };
 
 class ConfigParser {
@@ -32,6 +40,15 @@ public:
                     std::cerr << "Warning: Timescale cannot be negative. Resetting to default (1.0)." << std::endl;
                     config.timescale = 1.0f;
                 }
+            }
+
+            if (jsonData.contains("time") && jsonData["time"].is_string()) {
+                Time time;
+                time.days = jsonData["days"].get<int>();
+                time.hours = jsonData["hours"].get<int>();
+                time.minutes = jsonData["minutes"].get<int>();
+                time.seconds = jsonData["seconds"].get<int>();
+                config.time = time;
             }
 
             // // Parse and validate maxThreads
