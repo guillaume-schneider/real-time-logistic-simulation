@@ -127,20 +127,6 @@ int main() {
         db.loadFromFile("./orders.json");
         std::cout << "Commandes chargées depuis orders.json :\n";
         db.printAllOrders();
-
-        Author newAuthor("Alice Smith", "alice.smith@example.com");
-        Address newAddress("789 Oak St", "Star City", "USA", "11223");
-        auto newOrderTime = date::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-        Order& newOrder = db.createOrder("PROD789", newOrderTime, newAuthor, newAddress);
-
-        newOrder.serialNumber = "SN987654";
-        newOrder.deliveryTime = newOrderTime + std::chrono::hours(48);
-
-        std::cout << "Nouvelle commande ajoutée :\n" << newOrder.toString() << "\n";
-
-        db.saveToFile("./updated_orders.json");
-        std::cout << "Commandes sauvegardées dans updated_orders.json\n";
-
     } catch (const std::exception& e) {
         std::cerr << "Erreur : " << e.what() << "\n";
         return 1;
