@@ -1,0 +1,29 @@
+[
+    {
+        "product_reference": "ELPH240002",
+        "order_time": "2025-01-20T10:00:00Z",
+        "author": {
+            "name": "John Smith",
+            "contact": "john.smith@example.com"
+        },
+        "delivery_address": {
+            "street": "123 Main St",
+            "city": "Metropolis",
+            "country": "Country",
+            "postal_code": "12345"
+        }
+    },
+    {
+        "product_reference": "ELPH240001",
+        "order_time": "2025-01-19T14:30:00Z",
+        "author": {
+            "name": "Alice Johnson"
+        },
+        "delivery_address": {
+            "street": "456 Elm St",
+            "city": "Gotham",
+            "country": "Country",
+            "postal_code": "67890"
+        }
+    }
+]
