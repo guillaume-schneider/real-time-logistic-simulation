@@ -1,3 +1,5 @@
+#ifndef ORDER_FACTORY_HPP_
+#define ORDER_FACTORY_HPP_
 #include <sstream>
 #include <atomic>
 #include <iomanip>
@@ -34,3 +36,5 @@ public:
 };
 
 std::atomic<int> OrderFactory::counter{1};
+
+#endif

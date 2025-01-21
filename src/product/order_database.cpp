@@ -1,5 +1,8 @@
 #include <algorithm>
 #include <vector>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include "order_factory.hpp"
 #include "order_database.hpp"
 
 
@@ -29,6 +32,10 @@ date::sys_seconds OrderDatabase::convertStringToTime(const std::string& time) {
 
 
 void OrderDatabase::addOrder(const Order& order) {
+    if (m_orders.find(order.orderReference) != m_orders.end()) {
+        std::cerr << "Order database already contains " << order.orderReference << ".\n"; 
+        return;
+    }
     m_orders[order.orderReference] = order;
 }
 
@@ -91,7 +98,6 @@ void OrderDatabase::loadFromFile(const std::string& filename) {
 
     for (const auto& item : j) {
         if (item.is_object()) {
-            Order order;
             if (!doFileContains(filename, item, "product_reference") 
                 || !doFileContains(filename, item, "order_time")
                 || !doFileContains(filename, item, "author")
@@ -103,19 +109,20 @@ void OrderDatabase::loadFromFile(const std::string& filename) {
                     || !doFileContains(filename, item["delivery_address"], "postal_code"))
                 continue;
 
-            order.productReference = item["product_reference"].get<std::string>();
-            order.orderTime = convertStringToTime(item["order_time"].get<std::string>());
+            auto productReference = item["product_reference"].get<std::string>();
+            auto orderTime = convertStringToTime(item["order_time"].get<std::string>());
             auto name = item["author"]["name"].get<std::string>();
             std::string contact;
             if (item["author"].contains("contact")) {
                 contact = item["author"]["contact"].get<std::string>();
             }
-            order.author = Author(name, contact);
+            auto author = Author(name, contact);
             auto street = item["delivery_address"]["street"];
             auto city = item["delivery_address"]["city"];
             auto country = item["delivery_address"]["country"];
             auto postalCode = item["delivery_address"]["postal_code"];
-            addOrder(order);
+            auto deliveryAddress = Address(street, city, country, postalCode);
+            createOrder(productReference, orderTime, author, deliveryAddress);
         }
     }
 }

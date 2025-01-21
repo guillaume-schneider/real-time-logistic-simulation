@@ -126,7 +126,10 @@ int main() {
     try {
         db.loadFromFile("./orders.json");
         std::cout << "Commandes chargées depuis orders.json :\n";
-        db.printAllOrders();
+        auto orders = db.getOrders();
+        for (const auto& order : orders) {
+            std::cout << order.toString() << "\n";
+        }
     } catch (const std::exception& e) {
         std::cerr << "Erreur : " << e.what() << "\n";
         return 1;
