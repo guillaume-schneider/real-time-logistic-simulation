@@ -75,6 +75,11 @@ int main(int argc, char* argv[]) {
 
     std::cout << "\33[2J";
 
+    auto orders = orderDb.getOrders();
+    for (const auto& order : orders) {
+        std::cout << order.toString() << "\n";
+    }
+
     std::mutex outputMutex;
     auto realDuration = convertTimeInSeconds(parameters.time);
     verifyTimescale(parameters);
@@ -106,23 +111,6 @@ int main(int argc, char* argv[]) {
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
         if (elapsed >= simDuration) break;
-    }
-
-    // std::cout << "Press Enter to exit...\n";
-    // std::cin.get();
-
-    OrderDatabase db;
-
-    try {
-        db.loadFromFile("./orders.json");
-        std::cout << "Commandes chargées depuis orders.json :\n";
-        auto orders = db.getOrders();
-        for (const auto& order : orders) {
-            std::cout << order.toString() << "\n";
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Erreur : " << e.what() << "\n";
-        return 1;
     }
 
     return 0;
