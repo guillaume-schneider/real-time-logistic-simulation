@@ -11,20 +11,15 @@
 
 class ProductDatabase {
 private:
-    ProductDatabase() = default;
     std::unordered_map<std::string, std::vector<Product>> m_products;
     ReferenceManager* m_refManager = nullptr;
     std::string createSerialNumber(std::string reference);
 
 public:
-    static ProductDatabase& getInstance() {
-        static ProductDatabase instance;
-        return instance;
-    }
-    ProductDatabase(const ProductDatabase&) = delete;
-    ProductDatabase& operator=(const ProductDatabase&) = delete;
-    void addProduct(const Product& product);
+    ProductDatabase() = default;
+    ProductDatabase(const std::string& filename, ReferenceManager& refManager);
     bool init(const std::string& filename, ReferenceManager& refManager);
+    void addProduct(const Product& product);
     std::vector<Product> createProduct(const std::string& reference, int number);
     void removeProduct(const std::string& serialNumber);
     Product* findProduct(const std::string& serialNumber);

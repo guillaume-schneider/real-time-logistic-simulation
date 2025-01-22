@@ -12,8 +12,9 @@ std::string ProductDatabase::createSerialNumber(std::string reference) {
 
 bool ProductDatabase::init(const std::string& filename, ReferenceManager& refManager) {
     m_refManager = &refManager;
+    m_products.clear();
 
-       std::ifstream file(filename);
+    std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Erreur: impossible d'ouvrir le fichier JSON " << filename << std::endl;
         return false;
@@ -51,6 +52,11 @@ bool ProductDatabase::init(const std::string& filename, ReferenceManager& refMan
     }
 
     return true;
+}
+
+
+ProductDatabase::ProductDatabase(const std::string& filename, ReferenceManager& refManager) {
+    init(filename, refManager);
 }
 
 

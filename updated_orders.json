@@ -1,23 +1,6 @@
 [
     {
         "author": {
-            "contact": "alice.smith@example.com",
-            "name": "Alice Smith"
-        },
-        "delivery_address": {
-            "city": "Star City",
-            "country": "11223",
-            "postal_code": "USA",
-            "street": "789 Oak St"
-        },
-        "delivery_time": "2025-01-23T14:01:31Z",
-        "order_reference": "ORD-20250121-140131-0001",
-        "order_time": "2025-01-21T14:01:31Z",
-        "product_reference": "PROD789",
-        "serialNumber": "SN987654"
-    },
-    {
-        "author": {
             "contact": "",
             "name": "Alice Johnson"
         },
@@ -32,5 +15,22 @@
         "order_time": "2025-01-20T10:00:00Z",
         "product_reference": "ELPH240001",
         "serialNumber": null
+    },
+    {
+        "author": {
+            "contact": "alice.smith@example.com",
+            "name": "Alice Smith"
+        },
+        "delivery_address": {
+            "city": "Star City",
+            "country": "11223",
+            "postal_code": "USA",
+            "street": "789 Oak St"
+        },
+        "delivery_time": "2025-01-24T11:39:09Z",
+        "order_reference": "ORD-20250122-113909-0001",
+        "order_time": "2025-01-22T11:39:09Z",
+        "product_reference": "PROD789",
+        "serialNumber": "SN987654"
     }
 ]

@@ -21,7 +21,7 @@ protected:
     std::atomic<bool> m_isBusy{false};        // Indique si l'Actionner est occupé
     std::atomic<bool> m_stopThread{false};    // Indique si le thread doit s'arrêter
     std::mutex m_taskMutex;                   // Mutex pour synchronisation
-    Config m_config;
+    Parameters m_config;
     Location m_currentLocation;
     std::mutex& m_outputMutex;                // Mutex global pour l'affichage
     std::thread m_workerThread;               // Thread pour l'exécution
@@ -127,7 +127,7 @@ protected:
 public:
     Actionner() = default;
     Actionner(int actionnerId, const std::string& name, std::mutex& outputMtx,
-              const Config& config = Config(), const Location& currentLocation = Location(),
+              const Parameters& config = Parameters(), const Location& currentLocation = Location(),
               const int maxTaskSize = 100)
         : m_id(actionnerId), m_name(name), m_outputMutex(outputMtx),
             m_config(config), m_currentLocation(currentLocation),
@@ -162,7 +162,7 @@ public:
         return m_isBusy.load();
     }
 
-    void setConfig(const Config& config) {
+    void setConfig(const Parameters& config) {
         m_config = config;
     }
 
