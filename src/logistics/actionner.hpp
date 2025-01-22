@@ -22,7 +22,7 @@ protected:
     std::atomic<bool> m_stopThread{false};    // Indique si le thread doit s'arrêter
     std::mutex m_taskMutex;                   // Mutex pour synchronisation
     Parameters m_config;
-    Location m_currentLocation;
+    Point2D m_currentCoodinates;
     std::mutex& m_outputMutex;                // Mutex global pour l'affichage
     std::thread m_workerThread;               // Thread pour l'exécution
     std::queue<std::shared_ptr<Task>> m_taskQueue;
@@ -127,16 +127,16 @@ protected:
 public:
     Actionner() = default;
     Actionner(int actionnerId, const std::string& name, std::mutex& outputMtx,
-              const Parameters& config = Parameters(), const Location& currentLocation = Location(),
+              const Parameters& config = Parameters(), const Point2D& currentLocation = Point2D(),
               const int maxTaskSize = 100)
         : m_id(actionnerId), m_name(name), m_outputMutex(outputMtx),
-            m_config(config), m_currentLocation(currentLocation),
+            m_config(config), m_currentCoodinates(currentLocation),
                 m_maxSizeQueue(maxTaskSize) {
         m_workerThread = std::thread(&Actionner::threadLoop, this);
     }
     Actionner(const Actionner& other) : m_id(other.m_id), m_name(other.m_name),
         m_outputMutex(other.m_outputMutex), m_config(other.m_config), 
-            m_currentLocation(other.m_currentLocation),
+            m_currentCoodinates(other.m_currentCoodinates),
                 m_maxSizeQueue(other.m_maxSizeQueue) {}
 
     virtual ~Actionner() {
@@ -166,8 +166,12 @@ public:
         m_config = config;
     }
 
-    void setLocation(const Location& location) { m_currentLocation = location; }
-    Location& getLocation() { return m_currentLocation; }
+    void setCoordinates(const Point2D& coordinates) { m_currentCoodinates = coordinates; }
+    void setCoordinates(const double& x, const double& y) { 
+        m_currentCoodinates.x = x;
+        m_currentCoodinates.y = y;
+    }
+    const Point2D& getCoordinates() const { return m_currentCoodinates; }
 };
 
 #endif

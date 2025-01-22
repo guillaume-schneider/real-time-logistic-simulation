@@ -5,12 +5,16 @@
 #include <memory>
 #include <thread>
 #include "parameters.hpp"
-#include "product/product_database.hpp"
-#include "product/reference_manager.hpp"
-#include "product/order.hpp"
-#include "product/order_database.hpp"
+#include "stock/product/product_database.hpp"
+#include "stock/reference/reference_manager.hpp"
+#include "stock/order/order.hpp"
+#include "stock/order/order_database.hpp"
 #include "date/date.h"
 #include "initializer.hpp"
+#include "logistics/address_database.hpp"
+#include <random>
+#include <cmath>
+#include "logistics/ordonator.hpp"
 
 
 long long convertTimeInSeconds(const Time& time) {
@@ -30,57 +34,42 @@ void verifyTimescale(Parameters& config) {
 }
 
 
+void clear() {
+    std::cout << "\33[2J";
+}
+
+
 int main(int argc, char* argv[]) {
+    clear();
+    std::mutex outputMutex;
+    Ordonator& ordonator = Ordonator::getInstance();
+    ordonator.setOutputMutex(&outputMutex);
+
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
     ProductDatabase productDb;
     OrderDatabase orderDb;
     Parameters parameters;
-    Initializer::getInstance().loadData(refManager, productDb, orderDb, parameters);
+    Initializer::getInstance().loadData(refManager, productDb, orderDb,
+                                        parameters, ordonator);
 
-    std::cout << "\n--- List of all products ---\n";
-    productDb.listProducts();
-    std::cout << "Total products: " << productDb.getProductCount() << "\n\n";
-
-    // 6) Lister les produits par catégorie
-    std::cout << "\n--- Products by category ---\n";
-    productDb.listProductsByCategory();
-
-    // 7) Rechercher un produit par serial number (exemple)
-    //    Selon la logique de createProduct, les serials 
-    //    peuvent ressembler à "ELPH240002_1", "ELPH240002_2", etc.
-    Product* found = productDb.findProduct("ELPH2400021");
-    if (found) {
-        std::cout << "\nProduct ELPH2400021 found: "
-                  << found->getSerialNumber() << " / "
-                  << found->getProductReference() << "\n";
-    } else {
-        std::cerr << "\nProduct ELPH2400021 not found.\n";
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(5, 100);
+    AddressDatabase& addressDb = AddressDatabase::getInstance();
+    for (const auto& order : orderDb.getOrders()) {
+        addressDb.addAddress(order.deliveryAddress, dis(gen), dis(gen));
     }
 
-    // 8) Supprimer un produit par son numéro de série
-    productDb.removeProduct("ELPH2400021");
-
-    // 9) Vérifier que la suppression a bien eu lieu
-    found = productDb.findProduct("ELPH2400021");
-    if (!found) {
-        std::cout << "Removal confirmed: ELPH240002_1 not found.\n";
-    } else {
-        std::cerr << "Error: ELPH240002_1 still found after removal.\n";
+    for (auto const& worker : ordonator.getWorkers()) {
+        std::cout << worker.getId() << "\n";
     }
-
-    // 10) Lister les produits restants
-    std::cout << "\n--- List of products after removal ---\n";
-    productDb.listProducts();
-
-    std::cout << "\33[2J";
 
     auto orders = orderDb.getOrders();
     for (const auto& order : orders) {
         std::cout << order.toString() << "\n";
     }
 
-    std::mutex outputMutex;
     auto realDuration = convertTimeInSeconds(parameters.time);
     verifyTimescale(parameters);
 

@@ -2,8 +2,8 @@
 #define PRODUCT_HPP_
 
 #include <string>
-#include "product_reference.hpp"
-#include "../logistics/coordinates.hpp"
+#include "../reference/product_reference.hpp"
+#include "../../logistics/coordinates.hpp"
 
 class Product {
 private:

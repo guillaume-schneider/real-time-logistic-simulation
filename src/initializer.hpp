@@ -5,10 +5,11 @@
 #include <iostream>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include "product/product_database.hpp"
-#include "product/order_database.hpp"
-#include "product/reference_manager.hpp"
+#include "stock/product/product_database.hpp"
+#include "stock/order/order_database.hpp"
+#include "stock/reference/reference_manager.hpp"
 #include "parameters.hpp"
+#include "logistics/ordonator.hpp"
 
 
 class Initializer {
@@ -17,6 +18,7 @@ private:
     std::string m_productsPath;
     std::string m_ordersPath;
     std::string m_parametersPath;
+    std::string m_logisticsPath;
 
     Initializer() = default;
 
@@ -32,7 +34,7 @@ public:
     Initializer& operator=(const Initializer&) = delete;
     bool injectArguments(int argc, char* argv[]);
     void loadData(ReferenceManager& refManager, ProductDatabase& productDb,
-        OrderDatabase& orderDb, Parameters& parameters);
+        OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator);
 };
 
 

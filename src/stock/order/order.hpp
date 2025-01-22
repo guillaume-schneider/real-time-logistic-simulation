@@ -1,8 +1,8 @@
 #ifndef ORDER_HPP_
 #define ORDER_HPP_
 
-#include "product_reference.hpp"
-#include "../logistics/location.hpp"
+#include "../reference/product_reference.hpp"
+#include "../../logistics/location.hpp"
 #include <string>
 #include "date/date.h"
 #include <optional>

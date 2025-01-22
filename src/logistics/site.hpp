@@ -1,26 +1,23 @@
 #ifndef SITE_HPP_
 #define SITE_HPP_
 
-    #include <vector>
-    #include "tools.hpp"
-    #include "location.hpp"
+#include <vector>
+#include "location.hpp"
 
-    class Site : public Location {
-        std::vector<SiteArea> areas;
-        std::vector<Conveyor> conveyors;
-        std::vector<Carrier> carrier;
-    };
+class Site : public Location {
+    std::vector<SiteArea> areas;
+    std::vector<Conveyor> conveyors;
+    std::vector<Carrier> carrier;
+};
 
-    class SiteArea : public Location {};
+class SiteArea : public Location {};
 
-    class DeliveryPlatform : public SiteArea
-    {
+class DeliveryPlatform : public SiteArea {
 
-    };
+};
 
-    class StorageSpace : public SiteArea
-    {
-
-    };
+class StorageSpace : public SiteArea {
+    
+};
 
 #endif

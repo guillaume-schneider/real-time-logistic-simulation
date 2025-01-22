@@ -1,5 +1,6 @@
 #include "initializer.hpp"
 #include "parameters_parser.hpp"
+#include "logistics/ordonator.hpp"
 
 
 bool Initializer::doFileContains(nlohmann::json config, const std::string& key) {
@@ -22,13 +23,15 @@ void Initializer::parseJsonFile(const std::string& configFilePath) {
     configFile >> config;
 
     if (!doFileContains(config, "references") || !doFileContains(config, "products")
-        || !doFileContains(config, "orders") || !doFileContains(config, "parameters"))
+        || !doFileContains(config, "orders") || !doFileContains(config, "parameters")
+        || !doFileContains(config, "logistics"))
         return;
 
     m_referencesPath = config["references"];
     m_productsPath = config["products"];
     m_ordersPath = config["orders"];
     m_parametersPath = config["parameters"];
+    m_logisticsPath = config["logistics"];
 }
 
 bool Initializer::injectArguments(int argc, char* argv[]) {
@@ -57,9 +60,11 @@ bool Initializer::injectArguments(int argc, char* argv[]) {
 
 
 void Initializer::loadData(ReferenceManager& refManager, ProductDatabase& productDb,
-    OrderDatabase& orderDb, Parameters& parameters) {
+    OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator) {
     refManager.loadFromJson(m_referencesPath);
     productDb.init(m_productsPath, refManager);
     orderDb.loadFromFile(m_ordersPath);
     parameters = ParametersParser::parseParameters(m_parametersPath);
+    ordonator.setParameters(&parameters);
+    ordonator.loadFromFile(m_logisticsPath);
 }
