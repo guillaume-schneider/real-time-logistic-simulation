@@ -1,6 +1,5 @@
 #ifndef ORDER_FACTORY_HPP_
 #define ORDER_FACTORY_HPP_
-
 #include <sstream>
 #include <atomic>
 #include <iomanip>

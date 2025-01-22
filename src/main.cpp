@@ -111,32 +111,19 @@ int main(int argc, char* argv[]) {
     // std::cout << "Press Enter to exit...\n";
     // std::cin.get();
 
-    // try {
-    //     // Charger les commandes depuis le fichier JSON
-    //     db.loadFromFile("./orders.json");
-    //     std::cout << "Commandes chargées depuis orders.json :\n";
-    //     db.printAllOrders();
+    OrderDatabase db;
 
-    //     // Créer et ajouter une nouvelle commande
-    //     Author newAuthor("Alice Smith", "alice.smith@example.com");
-    //     Address newAddress("789 Oak St", "Star City", "USA", "11223");
-    //     auto newOrderTime = date::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-    //     Order& newOrder = db.createOrder("PROD789", newOrderTime, newAuthor, newAddress);
-
-    //     // Modifier les champs optionnels de la nouvelle commande
-    //     newOrder.serialNumber = "SN987654";
-    //     newOrder.deliveryTime = newOrderTime + std::chrono::hours(48);
-
-    //     std::cout << "Nouvelle commande ajoutée :\n" << newOrder.toString() << "\n";
-
-    //     // Sauvegarder les commandes dans un nouveau fichier
-    //     db.saveToFile("./updated_orders.json");
-    //     std::cout << "Commandes sauvegardées dans updated_orders.json\n";
-
-    // } catch (const std::exception& e) {
-    //     std::cerr << "Erreur : " << e.what() << "\n";
-    //     return 1;
-    // }
+    try {
+        db.loadFromFile("./orders.json");
+        std::cout << "Commandes chargées depuis orders.json :\n";
+        auto orders = db.getOrders();
+        for (const auto& order : orders) {
+            std::cout << order.toString() << "\n";
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Erreur : " << e.what() << "\n";
+        return 1;
+    }
 
     return 0;
 }
