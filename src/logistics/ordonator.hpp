@@ -10,7 +10,6 @@
 #include <memory>
 #include <fstream>
 #include <atomic>
-#include <optional>
 
 class Ordonator {
 private:
@@ -24,12 +23,11 @@ private:
     int m_carrierSize = 0;
     int m_carrierUsedCounter = 0;
 
-    std::vector<Worker> m_workers;
+    std::vector<std::shared_ptr<Worker>> m_workers;
     Parameters* m_parameters;
     std::mutex* m_outputMutex;
 
-    Ordonator()
-        : m_parameters(nullptr), m_outputMutex(nullptr), m_maxTaskSize(100) {}
+    Ordonator();
 public:
     static Ordonator& getInstance() {
         static Ordonator instance;
@@ -38,99 +36,20 @@ public:
     Ordonator(const Ordonator&) = delete;
     Ordonator& operator=(const Ordonator&) = delete;
 
-    Worker createWorker(const std::string& name, bool nameById = false) {
-        auto workerName = name;
-        m_workerCounter++;
-        if (nameById) workerName += " " + std::to_string(m_workerCounter);
-        auto worker = Worker(m_workerCounter, workerName, *m_outputMutex, *m_parameters,
-                             m_defaultWorkerCoordinates, m_maxTaskSize);
-        m_workers.push_back(worker);
-        return worker;
-    }
-
-    void init() {
-        for (int i = 0; i < m_workerSize; i++) {
-            createWorker("Worker", true);
-        }
-    }
-
-    void loadFromFile(const std::string& filename) {
-        std::ifstream file(filename);
-        if (!file.is_open()) {
-            std::cerr << "Ordonator Error: Could not open file " << filename << std::endl;
-            return;
-        }
-
-        try {
-            nlohmann::json jsonData;
-            file >> jsonData;
-
-            m_workerSize = jsonData.at("worker").get<int>();
-            m_forkliftSize = jsonData.at("forklift").get<int>();
-            m_carrierSize = jsonData.at("carrier").get<int>();
-
-            init();
-        } catch (const nlohmann::json::exception& e) {
-            std::cerr << "JSON parsing error: " << e.what() << std::endl;
-            return;
-        }
-    }
-
-    bool affectToolToWorker(const ToolType& toolType, const int& workerId) {
-        for (auto& worker : m_workers) {
-            if (worker.getId() == workerId) {
-                switch (toolType) {
-                    case ToolType::Forklift:
-                        if (m_forkliftUsedCounter >= m_forkliftSize) {
-                            std::cerr << "Ordonator: all the forlift are being used.\n";
-                            return false;
-                        } else {
-                            worker.setTool(toolType);
-                            m_forkliftUsedCounter++;
-                            return true;
-                        }
-                        break;
-                    case ToolType::Carrier:
-                        if (m_carrierUsedCounter >= m_carrierSize) {
-                            std::cerr << "Ordonator: all the carrier are being used.\n";
-                            return false;
-                        } else {
-                            worker.setTool(toolType);
-                            m_carrierUsedCounter++;
-                            return true;
-                        }
-                        break;
-                }
-                worker.setTool(toolType);
-            }
-        }
-    }
-
-    void setParameters(Parameters* parameters) {
-        m_parameters = parameters;
-    }
-
-    void setOutputMutex(std::mutex* outputMutex) {
-        m_outputMutex = outputMutex;
-    }
-
-    void setDefaultWorkerCoordinates(const Point2D& coordinates) {
-        m_defaultWorkerCoordinates = coordinates;
-    }
-
-    void setMaxTaskWorkerSize(const int& maxTaskSize) {
-        m_maxTaskSize = maxTaskSize;
-    }
-
-    std::optional<Worker> getWorker(const int& workerId) {
-        for (const auto& worker : m_workers) {
-            if (worker.getId() == workerId)
-                return worker;
-        }
-        return std::nullopt;
-    }
-
-    std::vector<Worker> getWorkers() {
+    std::shared_ptr<Worker> createWorker(const std::string& name, bool nameById);
+    void init(int workerSize);
+    void loadFromFile(const std::string& filename);
+    bool affectToolToWorker(const ToolType& toolType, const int& workerId);
+    void affectTaskToWorker(std::shared_ptr<Task> task, const int& workerId);
+    int affectTaskToIdleWorker(std::shared_ptr<Task> task);
+    int getIdleWorker() const;
+    size_t getWorkerSize() const;
+    void setParameters(Parameters* parameters);
+    void setOutputMutex(std::mutex* outputMutex);
+    void setDefaultWorkerCoordinates(const Point2D& coordinates);
+    void setMaxTaskWorkerSize(const int& maxTaskSize);
+    std::shared_ptr<Worker> getWorker(const int& workerId) const;
+    const std::vector<std::shared_ptr<Worker>>& getWorkers() const {
         return m_workers;
     }
 };

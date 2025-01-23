@@ -90,7 +90,7 @@ std::vector<Order> OrderDatabase::getOrders() const {
 void OrderDatabase::loadFromFile(const std::string& filename) {
     std::ifstream inputFile(filename);
     if (!inputFile) {
-        throw std::runtime_error("Impossible d'ouvrir le fichier " + filename);
+        throw std::runtime_error("Can\'t open file " + filename);
     }
 
     json j;
@@ -131,7 +131,7 @@ void OrderDatabase::loadFromFile(const std::string& filename) {
 void OrderDatabase::saveToFile(const std::string& filename) const {
     std::ofstream outputFile(filename);
     if (!outputFile) {
-        throw std::runtime_error("Impossible d'écrire dans le fichier " + filename);
+        throw std::runtime_error("Can\'t write file " + filename);
     }
 
     json j = json::array();

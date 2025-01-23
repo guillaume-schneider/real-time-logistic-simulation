@@ -61,20 +61,8 @@ int main(int argc, char* argv[]) {
         addressDb.addAddress(order.deliveryAddress, dis(gen), dis(gen));
     }
 
-    for (auto const& worker : ordonator.getWorkers()) {
-        std::cout << worker.getId() << "\n";
-    }
-
-    auto orders = orderDb.getOrders();
-    for (const auto& order : orders) {
-        std::cout << order.toString() << "\n";
-    }
-
     auto realDuration = convertTimeInSeconds(parameters.time);
     verifyTimescale(parameters);
-
-    std::shared_ptr<Actionner> actionner = std::make_shared<Actionner>(1, "Actionner 1", outputMutex, parameters);
-    std::shared_ptr<Actionner> actionner2 = std::make_shared<Actionner>(2, "Actionner 2", outputMutex, parameters);
 
     std::vector<std::shared_ptr<Actionnable>> actions = {
         std::make_shared<Move>(3000),
@@ -88,9 +76,9 @@ int main(int argc, char* argv[]) {
         std::make_shared<Task>("Move 3", actions[2])
     };
 
+    auto id = ordonator.getIdleWorker();
     for (auto& task : tasks) {
-        actionner->submitTask(task);
-        actionner2->submitTask(task);
+        ordonator.affectTaskToWorker(task, id);
     }
 
     auto simDuration = realDuration / parameters.timescale;
