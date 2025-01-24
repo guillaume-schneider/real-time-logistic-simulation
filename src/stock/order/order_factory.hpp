@@ -14,10 +14,11 @@ private:
 
         auto now = std::chrono::system_clock::now();
         auto now_time_t = std::chrono::system_clock::to_time_t(now);
-        auto now_tm = *std::gmtime(&now_time_t);
+        std::tm result;
+        gmtime_s(&result, &now_time_t);
 
         oss << "ORD-"
-            << std::put_time(&now_tm, "%Y%m%d-%H%M%S") << "-"
+            << std::put_time(&result, "%Y%m%d-%H%M%S") << "-"
             << std::setw(4) << std::setfill('0') << counter++;
 
         return oss.str();
