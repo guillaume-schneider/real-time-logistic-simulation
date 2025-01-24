@@ -7,6 +7,14 @@
 #include <thread>
 #include "action.hpp"
 
+
+struct ActionDescription {
+    std::string name; // Action name
+    int processingTime; // Execution time
+    int order; // Order of the action
+};
+
+
 class Task {
 private:
     std::string m_name;
@@ -55,6 +63,21 @@ public:
     }
 
     std::string getName() const { return m_name; }
+
+    std::vector<ActionDescription> getActionDescriptions() const {
+        std::vector<ActionDescription> descriptions;
+        int order = 0;
+
+        for (const auto& action : m_actions) {
+            descriptions.push_back({
+                action->getName(),           // Assume Actionnable has a getName() method
+                action->getProcessingTime(), // Assume Actionnable has a getProcessingTime() method
+                ++order                      // Increment order for each action
+            });
+        }
+
+        return descriptions;
+    }
 };
 
 

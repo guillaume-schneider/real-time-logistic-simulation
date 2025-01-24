@@ -61,6 +61,7 @@ void Actionner::printProgress(std::string taskName, float progress, int barWidth
 }
 
 void Actionner::loadingBar(std::shared_ptr<Task> task) const {
+    auto actionsDescription = task->getActionDescriptions();
     const int barWidth = 50;
 
     float simDurationMs = static_cast<float>(task->getDuration());
@@ -73,10 +74,10 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
 
     auto frameInterval = std::chrono::milliseconds(50);
     auto nextRefresh = startTime;
+    auto currentActionName = task->getName() +  " (" + actionsDescription[0].name + ")";
 
     while (true) {
         std::this_thread::sleep_until(nextRefresh);
-
         auto now = std::chrono::steady_clock::now();
         if (now >= endTime) 
         {
@@ -84,7 +85,7 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
             // => on force la progression à 100% et on sort
             {
                 std::lock_guard<std::mutex> lock(*m_outputMutex);
-                printProgress(task->getName(), 1.0f, barWidth); 
+                printProgress(currentActionName, 1.0f, barWidth); 
             }
             break;
         }
@@ -92,6 +93,11 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
         auto elapsedMs = static_cast<float>(
             std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()
         );
+
+        for (const auto& description : actionsDescription) {
+            if (elapsedMs >= description.processingTime)
+                currentActionName = task->getName() +  " (" + description.name + ")";
+        }
         
         // d) Calcul de la progression [0..1]
         float progress = elapsedMs / realDurationMs;
@@ -100,7 +106,7 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
         // e) Afficher la barre
         {
             std::lock_guard<std::mutex> lock(*m_outputMutex);
-            printProgress(task->getName(), progress, barWidth);
+            printProgress(currentActionName, progress, barWidth);
         }
 
         // f) Incrémenter le prochain rafraîchissement

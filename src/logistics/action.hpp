@@ -13,32 +13,31 @@
 
 class Actionnable {
 protected:
-    int processingTime;
+    std::string m_name;
+    int m_processingTime;
 public:
-    explicit Actionnable(int time) : processingTime(time) {}
+    explicit Actionnable(const std::string& name, int time) : m_name(name), m_processingTime(time * 1000) {}
     virtual ~Actionnable() = default;
 
     virtual void execute() = 0;
-    int getProcessingTime() { return processingTime; }
+    int getProcessingTime() { return m_processingTime; }
 
     void displayProcessingTime() const {
-        std::cout << "Processing time: " << processingTime << " ms" << std::endl;
+        std::cout << "Processing time: " << m_processingTime << " ms" << std::endl;
+    }
+
+    const std::string getName() const {
+        return m_name;
     }
 };
 
 class Move : public Actionnable {
 public:
-    explicit Move(int time) : Actionnable(time) {}
+    explicit Move(const std::string& name, int time) : Actionnable(name, time) {}
 
     void execute() override {
     }
 };
 
-class ActionB : public Actionnable {
-public:
-    explicit ActionB(int time) : Actionnable(time) {}
-
-    void execute() override {}
-};
 
 #endif

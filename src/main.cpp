@@ -65,13 +65,13 @@ int main(int argc, char* argv[]) {
     verifyTimescale(parameters);
 
     std::vector<std::shared_ptr<Actionnable>> actions = {
-        std::make_shared<Move>(3000),
-        std::make_shared<Move>(5000),
-        std::make_shared<Move>(2000)
+        std::make_shared<Move>("Move1", 3),
+        std::make_shared<Move>("Move2", 5),
+        std::make_shared<Move>("Move3", 2)
     };
 
     std::vector<std::shared_ptr<Task>> tasks = {
-        std::make_shared<Task>("Move 1", actions[0]),
+        std::make_shared<Task>("Move 1", actions[0], actions[1]),
         std::make_shared<Task>("Move 2", actions[1]),
         std::make_shared<Task>("Move 3", actions[2])
     };
