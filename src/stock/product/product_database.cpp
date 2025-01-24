@@ -3,8 +3,25 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include "../../logistics/coordinates.hpp"
+#include <regex>
 
 using json = nlohmann::json;
+
+constexpr size_t categoryLength = 4;       
+constexpr size_t subCategoryLength = 3;    
+constexpr size_t yearLength = 2;
+
+std::string ProductDatabase::extractProductReference(const std::string& serialNumber) {
+    // Regex pour valider et extraire la référence produit
+    std::regex serialRegex("([A-Z]+\\d+\\d{2})(\\d{4})");
+    std::smatch match;
+
+    if (std::regex_match(serialNumber, match, serialRegex)) {
+        return match[1]; // La référence produit correspond au premier groupe capturé
+    } else {
+        throw std::invalid_argument("Invalid serial number format.");
+    }
+}
 
 std::string ProductDatabase::createSerialNumber(std::string reference) {
     return reference + std::to_string(m_products[reference].size() + 1);
@@ -63,50 +80,62 @@ ProductDatabase::ProductDatabase(const std::string& filename, ReferenceManager& 
 // ------------------------------------------------------------------
 // Créer "number" produits pour une référence donnée
 // ------------------------------------------------------------------
-std::vector<Product> ProductDatabase::createProduct(const std::string& reference, int number)
+
+void ProductDatabase::createProduct(const std::string& reference, int number)
 {
-    std::vector<Product> createdProducts;
     if (!m_refManager) {
         std::cerr << "Error: ReferenceManager not initialized.\n";
-        return createdProducts;
+        return;
     }
 
     const ProductReference* ref = m_refManager->findProductByReference(reference);
     if (!ref) {
         std::cerr << "Error: No product reference found for '" << reference << "'\n";
-        return createdProducts;
+        return;
     }
 
     for (int i = 0; i < number; ++i) {
         std::string serialNumber = createSerialNumber(reference);
 
-        Product product(serialNumber, ref->getReference(), Point2D(0.0, 0.0));
-        createdProducts.push_back(product);
-        addProduct(product);
+        auto product = std::make_unique<Product>(serialNumber, ref->getReference(), Point2D(0.0, 0.0));
+        addProduct(std::move(product));
+    }
+}
+
+void ProductDatabase::moveProduct(const std::string& serialNumber, ProductDatabase& destination) {
+    std::string productReference = extractProductReference(serialNumber);
+
+    auto& sourceVec = m_products[productReference];
+    if (sourceVec.empty()) {
+        std::cerr << "Error: No product found with reference '" << productReference << "'\n";
+        return;
     }
 
-    return createdProducts;
+    auto& destinationVec = destination.m_products[productReference];
+    destinationVec.push_back(std::move(sourceVec.back()));
+    sourceVec.pop_back();
 }
 
 // ------------------------------------------------------------------
 // Ajouter un produit
 // ------------------------------------------------------------------
-void ProductDatabase::addProduct(const Product& product)
+void ProductDatabase::addProduct(std::unique_ptr<Product> product)
 {
-    const std::string& referenceKey = product.getProductReference();
-
+    const std::string& referenceKey = product->getProductReference();
     auto& productsVec = m_products[referenceKey];
+
     auto it = std::find_if(productsVec.begin(), productsVec.end(),
-                           [&product](const Product& p) {
-                               return p.getSerialNumber() == product.getSerialNumber();
+                           [&product](const std::unique_ptr<Product>& p) {
+                               return p->getSerialNumber() == product->getSerialNumber();
                            });
+
     if (it != productsVec.end()) {
         std::cerr << "Error: A product with the serial number '"
-                  << product.getSerialNumber() << "' already exists.\n";
+                  << product->getSerialNumber() << "' already exists.\n";
         return;
     }
 
-    productsVec.push_back(product);
+    productsVec.push_back(std::move(product));
 }
 
 // ------------------------------------------------------------------
@@ -116,8 +145,8 @@ void ProductDatabase::removeProduct(const std::string& serialNumber)
 {
     for (auto& [referenceKey, productsVec] : m_products) {
         auto it = std::remove_if(productsVec.begin(), productsVec.end(),
-                                 [&serialNumber](const Product& p) {
-                                     return p.getSerialNumber() == serialNumber;
+                                 [&serialNumber](const std::unique_ptr<Product>& product) {
+                                     return product->getSerialNumber() == serialNumber;
                                  });
         if (it != productsVec.end()) {
             productsVec.erase(it, productsVec.end());
@@ -133,18 +162,16 @@ void ProductDatabase::removeProduct(const std::string& serialNumber)
 // ------------------------------------------------------------------
 // Trouver un produit par numéro de série
 // ------------------------------------------------------------------
-Product* ProductDatabase::findProduct(const std::string& serialNumber)
-{
+Product* ProductDatabase::findProduct(const std::string& serialNumber) {
     for (auto& [referenceKey, productsVec] : m_products) {
         auto it = std::find_if(productsVec.begin(), productsVec.end(),
-                               [&serialNumber](Product& p) {
-                                   return p.getSerialNumber() == serialNumber;
+                               [&serialNumber](const std::unique_ptr<Product>& product) {
+                                   return product->getSerialNumber() == serialNumber;
                                });
         if (it != productsVec.end()) {
-            return &(*it);
+            return it->get();
         }
     }
-
     return nullptr;
 }
 
@@ -160,10 +187,9 @@ void ProductDatabase::listProducts() const
 
     for (const auto& [referenceKey, productsVec] : m_products) {
         for (const auto& product : productsVec) {
-            std::cout << "Serial Number: " << product.getSerialNumber() << "\n"
-                      << "Product Reference: " << product.getProductReference() << "\n"
-                      << "Coordinates: (" << product.getCoordinates().x << ", "
-                      << product.getCoordinates().y << ")\n\n";
+            std::cout << "Serial Number: " << product->getSerialNumber() << "\n"
+                      << "Product Reference: " << product->getProductReference() << "\n"
+                      << "Coordinates: (" << product->getCoordinates() << ")\n\n";
         }
     }
 }

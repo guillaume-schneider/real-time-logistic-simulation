@@ -47,10 +47,10 @@ int main(int argc, char* argv[]) {
 
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
-    ProductDatabase productDb;
+    ProductDatabase initialProductStorage;
     OrderDatabase orderDb;
     Parameters parameters;
-    Initializer::getInstance().loadData(refManager, productDb, orderDb,
+    Initializer::getInstance().loadData(refManager, initialProductStorage, orderDb,
                                         parameters, ordonator);
 
     std::random_device rd;
