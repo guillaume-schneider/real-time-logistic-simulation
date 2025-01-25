@@ -10,6 +10,7 @@
 
 struct ActionDescription {
     std::string name; // Action name
+    long long cumulatedProcessingTime;
     long long processingTime; // Execution time
     int order; // Order of the action
 };
@@ -67,10 +68,13 @@ public:
     std::vector<ActionDescription> getActionDescriptions() const {
         std::vector<ActionDescription> descriptions;
         int order = 0;
+        long long accumulatedProcessingTime = 0;
 
         for (const auto& action : m_actions) {
+            accumulatedProcessingTime += action->getProcessingTime();
             descriptions.push_back({
                 action->getName(),           // Assume Actionnable has a getName() method
+                accumulatedProcessingTime,
                 action->getProcessingTime(), // Assume Actionnable has a getProcessingTime() method
                 ++order                      // Increment order for each action
             });

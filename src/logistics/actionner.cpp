@@ -60,6 +60,11 @@ void Actionner::printProgress(std::string taskName, float progress, int barWidth
     std::cout.flush();
 }
 
+long long formatTime(long long time, float timescale) {
+    return static_cast<long long>(time / timescale);
+}
+
+
 void Actionner::loadingBar(std::shared_ptr<Task> task) const {
     auto actionsDescription = task->getActionDescriptions();
     const int barWidth = 50;
@@ -79,10 +84,9 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
     while (true) {
         std::this_thread::sleep_until(nextRefresh);
         auto now = std::chrono::steady_clock::now();
+
         if (now >= endTime) 
         {
-            // La durée réelle fixée est atteinte (ou dépassée)
-            // => on force la progression à 100% et on sort
             {
                 std::lock_guard<std::mutex> lock(*m_outputMutex);
                 printProgress(currentActionName, 1.0f, barWidth); 
@@ -90,26 +94,41 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
             break;
         }
 
+
         auto elapsedMs = static_cast<float>(
             std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()
         );
 
-        for (const auto& description : actionsDescription) {
-            if (elapsedMs >= (description.processingTime / timescale))
-                currentActionName = task->getName() +  " (" + description.name + ")";
+        auto lastName = currentActionName;
+        if (formatTime(actionsDescription[0].cumulatedProcessingTime, timescale) > elapsedMs) {
+            currentActionName = actionsDescription[0].name;
+        } else if (elapsedMs > formatTime(actionsDescription[actionsDescription.size() - 2].cumulatedProcessingTime, timescale)) {
+            currentActionName = actionsDescription[actionsDescription.size() - 1].name;
+        } else {
+            for (int i = 0; i < actionsDescription.size() - 2; i++) {
+                if (formatTime(actionsDescription[i + 1].cumulatedProcessingTime, timescale) > elapsedMs
+                    && elapsedMs >= formatTime(actionsDescription[i].cumulatedProcessingTime, timescale)) {
+                        currentActionName = actionsDescription[i + 1].name;
+                        break;
+                }
+            }
+        }
+
+        if (lastName != currentActionName) {
+            {
+                std::lock_guard<std::mutex> lock(*m_outputMutex);
+                std::cout << "\33[2K";
+            }
         }
     
-        // d) Calcul de la progression [0..1]
         float progress = elapsedMs / realDurationMs;
         if (progress > 1.0f) progress = 1.0f;
     
-        // e) Afficher la barre
         {
             std::lock_guard<std::mutex> lock(*m_outputMutex);
             printProgress(currentActionName, progress, barWidth);
         }
 
-        // f) Incrémenter le prochain rafraîchissement
         nextRefresh += frameInterval;
     }
 }

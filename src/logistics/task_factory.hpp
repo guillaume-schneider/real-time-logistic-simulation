@@ -19,8 +19,12 @@ public:
         result->addAction(std::make_shared<Move>("Move to Storage", movingTimeStorage, worker, storageCoordinates));
 
         auto deliveryCoordinates = Site::getInstance().delivery.coordinates;
-        auto movingTimeDelivery = calculateTravelTimeInMs(worker->getCoordinates(), deliveryCoordinates, worker->getSpeed());
+        auto movingTimeDelivery = calculateTravelTimeInMs(storageCoordinates, deliveryCoordinates, worker->getSpeed());
         result->addAction(std::make_shared<Move>("Move to Delivery", movingTimeDelivery, worker, deliveryCoordinates));
+
+        auto siteCoordinates = Site::getInstance().coordinates;
+        auto movingTimeSite = calculateTravelTimeInMs(deliveryCoordinates, siteCoordinates, worker->getSpeed());
+        result->addAction(std::make_shared<Move>("Move to Site", movingTimeDelivery, worker, siteCoordinates));
         return result;
     }
 };
