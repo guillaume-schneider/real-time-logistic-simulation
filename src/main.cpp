@@ -14,7 +14,7 @@
 #include "logistics/address_database.hpp"
 #include <random>
 #include <cmath>
-#include "logistics/ordonator.hpp"
+#include "logistics/scheduler.hpp"
 #include "logistics/site.hpp"
 
 
@@ -42,9 +42,9 @@ void clear() {
 
 int main(int argc, char* argv[]) {
     clear();
-    std::mutex outputMutex;
-    Ordonator& ordonator = Ordonator::getInstance();
-    ordonator.setOutputMutex(&outputMutex);
+    std::shared_ptr<std::mutex> outputMutex = std::make_shared<std::mutex>();
+    Scheduler& scheduler = Scheduler::getInstance();
+    scheduler.setOutputMutex(outputMutex);
 
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     OrderDatabase orderDb;
     Parameters parameters;
     Initializer::getInstance().loadData(refManager, initialProductStorage, orderDb,
-                                        parameters, ordonator, site);
+                                        parameters, scheduler, site);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
     AddressDatabase& addressDb = AddressDatabase::getInstance();
     for (const auto& order : orderDb.getOrders()) {
         addressDb.addAddress(order.deliveryAddress, dis(gen), dis(gen));
+        scheduler.affectOrder(order);
     }
 
     auto realDuration = convertTimeInSeconds(parameters.time);
@@ -68,6 +69,7 @@ int main(int argc, char* argv[]) {
 
     auto simDuration = realDuration / parameters.timescale;
     auto start = std::chrono::steady_clock::now();
+    scheduler.runScheduler();
     while (true)
     {
         auto now = std::chrono::steady_clock::now();

@@ -9,7 +9,7 @@
 #include "stock/order/order_database.hpp"
 #include "stock/reference/reference_manager.hpp"
 #include "parameters.hpp"
-#include "logistics/ordonator.hpp"
+#include "logistics/scheduler.hpp"
 #include "logistics/site.hpp"
 
 
@@ -35,7 +35,7 @@ public:
     Initializer& operator=(const Initializer&) = delete;
     bool injectArguments(int argc, char* argv[]);
     void loadData(ReferenceManager& refManager, ProductDatabase& productDb,
-        OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator, Site& site);
+        OrderDatabase& orderDb, Parameters& parameters, Scheduler& ordonator, Site& site);
 };
 
 

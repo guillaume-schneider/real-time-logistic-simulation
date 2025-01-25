@@ -15,8 +15,12 @@ public:
     static std::shared_ptr<Task> createPrepareOrderTask(const Order& order, std::shared_ptr<Worker> worker) {
         auto result = std::make_shared<Task>("Prepare Order");
         auto storageCoordinates = Site::getInstance().storage.coordinates;
-        auto movingTime = calculateTravelTimeInSeconds(worker->getCoordinates(), storageCoordinates, worker->getSpeed());
-        result->addAction(std::make_shared<Move>("Move", movingTime, worker, storageCoordinates));
+        auto movingTimeStorage = calculateTravelTimeInMs(worker->getCoordinates(), storageCoordinates, worker->getSpeed());
+        result->addAction(std::make_shared<Move>("Move to Storage", movingTimeStorage, worker, storageCoordinates));
+
+        auto deliveryCoordinates = Site::getInstance().delivery.coordinates;
+        auto movingTimeDelivery = calculateTravelTimeInMs(worker->getCoordinates(), deliveryCoordinates, worker->getSpeed());
+        result->addAction(std::make_shared<Move>("Move to Delivery", movingTimeDelivery, worker, deliveryCoordinates));
         return result;
     }
 };

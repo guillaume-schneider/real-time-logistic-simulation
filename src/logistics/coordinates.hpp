@@ -16,6 +16,6 @@ struct Point2D {
 };
 
 double calculatePointDistance(const Point2D& a, const Point2D& b);
-float calculateTravelTimeInSeconds(const Point2D& a, const Point2D& b, const float& speed); 
+int calculateTravelTimeInMs(const Point2D& a, const Point2D& b, const float& speed); 
 
 #endif

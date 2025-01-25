@@ -14,9 +14,9 @@ private:
     Point2D m_currentCoodinates;
 public:
     Worker() : Actionner(), m_speed(5.0f), m_currentTool(None), m_currentCoodinates(Point2D()), m_currentOrder(nullptr) {}
-    Worker(int actionnerId, const std::string& name, std::mutex* outputMtx,
+    Worker(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
             Parameters* config = nullptr, const Point2D& coordinates = Point2D(),
-            const int maxTaskSize = 100, float speed = 5.0f)
+            const int maxTaskSize = 100, float speed = 8.0f)
         : Actionner(actionnerId, name, outputMtx, config, maxTaskSize),
             m_speed(speed), m_currentTool(None), m_currentCoodinates(coordinates), m_currentOrder(nullptr) {}
 

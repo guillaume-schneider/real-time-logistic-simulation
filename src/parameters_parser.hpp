@@ -32,13 +32,19 @@ public:
                 }
             }
 
-            if (jsonData.contains("time") && jsonData["time"].is_string()) {
+            if (jsonData.contains("time")) {
                 Time time;
-                time.days = jsonData["days"].get<int>();
-                time.hours = jsonData["hours"].get<int>();
-                time.minutes = jsonData["minutes"].get<int>();
-                time.seconds = jsonData["seconds"].get<int>();
-                config.time = time;
+                auto jsonTime = jsonData["time"];
+                if (jsonTime.contains("days") && jsonTime.contains("hours")
+                    && jsonTime.contains("minutes") && jsonTime.contains("seconds")) {
+                    time.days = jsonTime["days"].get<int>();
+                    time.hours = jsonTime["hours"].get<int>();
+                    time.minutes = jsonTime["minutes"].get<int>();
+                    time.seconds = jsonTime["seconds"].get<int>();
+                    config.time = time;
+                } else {
+                    std::cerr << "Parameters Parser Error: Time doesn\'t have the correct format.\n";
+                }
             }
             return config;
 

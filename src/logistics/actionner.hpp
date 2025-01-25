@@ -9,6 +9,7 @@
 #include "task.hpp"
 #include "../parameters.hpp"
 #include "coordinates.hpp"
+#include <memory>
 
 
 class Actionner {
@@ -19,7 +20,7 @@ protected:
     std::atomic<bool> m_stopThread{false};    // Indique si le thread doit s'arrêter
     std::mutex m_taskMutex;                   // Mutex pour synchronisation
     Parameters* m_parameters;
-    std::mutex* m_outputMutex;                // Mutex global pour l'affichage
+    std::shared_ptr<std::mutex> m_outputMutex;                // Mutex global pour l'affichage
     std::thread m_workerThread;               // Thread pour l'exécution
     std::queue<std::shared_ptr<Task>> m_taskQueue;
     std::condition_variable m_taskCondition;  // Condition pour attendre une nouvelle tâche
@@ -32,7 +33,7 @@ protected:
 
 public:
     Actionner();
-    Actionner(int actionnerId, const std::string& name, std::mutex* outputMtx,
+    Actionner(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
               Parameters* parameters, const int maxTaskSize);
     Actionner(const Actionner& other);
     virtual ~Actionner();

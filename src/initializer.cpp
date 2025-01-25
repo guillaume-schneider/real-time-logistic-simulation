@@ -1,6 +1,6 @@
 #include "initializer.hpp"
 #include "parameters_parser.hpp"
-#include "logistics/ordonator.hpp"
+#include "logistics/scheduler.hpp"
 
 
 bool Initializer::doFileContains(nlohmann::json config, const std::string& key) {
@@ -119,7 +119,7 @@ void loadDataSite(const std::string& filename, Site& site) {
 
 
 void Initializer::loadData(ReferenceManager& refManager, ProductDatabase& productDb,
-    OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator, Site& site) {
+    OrderDatabase& orderDb, Parameters& parameters, Scheduler& ordonator, Site& site) {
     refManager.loadFromJson(m_referencesPath);
     productDb.init(m_productsPath, refManager);
     orderDb.loadFromFile(m_ordersPath);

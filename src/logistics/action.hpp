@@ -9,7 +9,7 @@ protected:
     std::string m_name;
     int m_processingTime;
 public:
-    explicit Actionnable(const std::string& name, int time) : m_name(name), m_processingTime(time * 1000) {}
+    explicit Actionnable(const std::string& name, int time) : m_name(name), m_processingTime(time) {}
     virtual ~Actionnable() = default;
 
     virtual void execute() = 0;

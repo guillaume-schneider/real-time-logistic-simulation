@@ -1,9 +1,9 @@
 {
-    "timescale": 1.0,
+    "timescale": 5.0,
     "time": {
         "days": 0,
-        "hours": 0,
-        "minutes": 1,
+        "hours": 1,
+        "minutes": 0,
         "seconds": 0
     }
 }

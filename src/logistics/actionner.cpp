@@ -95,7 +95,7 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
         );
 
         for (const auto& description : actionsDescription) {
-            if (elapsedMs >= description.processingTime)
+            if (elapsedMs >= (description.processingTime / timescale))
                 currentActionName = task->getName() +  " (" + description.name + ")";
         }
         
@@ -118,7 +118,7 @@ Actionner::Actionner() : m_id(), m_name(), m_outputMutex(nullptr),
         m_parameters(), m_maxSizeQueue()  {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
-Actionner::Actionner(int actionnerId, const std::string& name, std::mutex* outputMtx,
+Actionner::Actionner(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
             Parameters* parameters = nullptr, const int maxTaskSize = 100)
     : m_id(actionnerId), m_name(name), m_outputMutex(outputMtx),
         m_parameters(parameters), m_maxSizeQueue(maxTaskSize) {

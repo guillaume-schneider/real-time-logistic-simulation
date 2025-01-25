@@ -8,10 +8,10 @@ double calculatePointDistance(const Point2D& a, const Point2D& b) {
 }
 
 
-float calculateTravelTimeInSeconds(const Point2D& a, const Point2D& b, const float& speed) {
+int calculateTravelTimeInMs(const Point2D& a, const Point2D& b, const float& speed) {
     if (speed <= 0) {
         throw std::invalid_argument("Speed must be greater than zero");
     }
-    float distance = calculatePointDistance(a, b);
-    return (distance / speed) * 3600.0f;
+    double distance = calculatePointDistance(a, b);
+    return static_cast<int>((distance / speed) * 3600. * 1000.);
 }

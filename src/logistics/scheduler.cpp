@@ -1,13 +1,11 @@
-#include "ordonator.hpp"
+#include "scheduler.hpp"
 #include "task_factory.hpp"
 
 
-std::atomic<int> Ordonator::m_workerCounter{0};
+std::atomic<int> Scheduler::m_workerCounter{0};
 
-Ordonator::Ordonator()
-    : m_parameters(nullptr), m_outputMutex(nullptr), m_maxTaskSize(100) {}
 
-std::shared_ptr<Worker> Ordonator::createWorker(const std::string& name, bool nameById = false) {
+std::shared_ptr<Worker> Scheduler::createWorker(const std::string& name, bool nameById = false) {
     auto workerName = name;
     m_workerCounter++;
     if (nameById) workerName += " " + std::to_string(m_workerCounter);
@@ -18,13 +16,27 @@ std::shared_ptr<Worker> Ordonator::createWorker(const std::string& name, bool na
     return worker;
 }
 
-void Ordonator::init(int workerSize) {
+void Scheduler::init(int workerSize) {
     for (int i = 0; i < workerSize; i++) {
         createWorker("Worker", true);
     }
 }
 
-void Ordonator::loadFromFile(const std::string& filename) {
+Scheduler::~Scheduler() {
+    m_stopThread = true;
+    if (m_schedulerThread.joinable()) {
+        m_schedulerThread.join();
+    }
+}
+
+Scheduler::Scheduler() 
+    : m_parameters(nullptr), m_outputMutex(nullptr), m_maxTaskSize(100) {}
+
+void Scheduler::runScheduler() {
+    m_schedulerThread = std::thread(&Scheduler::scheduleThread, this);
+}
+
+void Scheduler::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Ordonator Error: Could not open file " << filename << std::endl;
@@ -46,7 +58,7 @@ void Ordonator::loadFromFile(const std::string& filename) {
     }
 }
 
-bool Ordonator::affectToolToWorker(const ToolType& toolType, const int& workerId) {
+bool Scheduler::affectToolToWorker(const ToolType& toolType, const int& workerId) {
     for (auto& worker : m_workers) {
         if (worker->getId() == workerId) {
             switch (toolType) {
@@ -78,7 +90,7 @@ bool Ordonator::affectToolToWorker(const ToolType& toolType, const int& workerId
     return false;
 }
 
-void Ordonator::affectTaskToWorker(std::shared_ptr<Task> task, const int& workerId) {
+void Scheduler::affectTaskToWorker(std::shared_ptr<Task> task, const int& workerId) {
     for (auto& worker : m_workers) {
         if (worker->getId() == workerId) {
             worker->submitTask(task);
@@ -86,7 +98,7 @@ void Ordonator::affectTaskToWorker(std::shared_ptr<Task> task, const int& worker
     }
 }
 
-int Ordonator::affectTaskToIdleWorker(std::shared_ptr<Task> task) {
+int Scheduler::affectTaskToIdleWorker(std::shared_ptr<Task> task) {
     int workerId = -1;
     for (auto& worker : m_workers) {
         if (!worker->hasTask()) {
@@ -98,7 +110,7 @@ int Ordonator::affectTaskToIdleWorker(std::shared_ptr<Task> task) {
     return workerId;
 }
 
-int Ordonator::getIdleWorker() const {
+int Scheduler::getIdleWorker() const {
     int workerId = -1;
     for (auto& worker : m_workers) {
         if (!worker->hasTask()) {
@@ -108,27 +120,27 @@ int Ordonator::getIdleWorker() const {
     return workerId;
 }
 
-size_t Ordonator::getWorkerSize() const {
+size_t Scheduler::getWorkerSize() const {
     return m_workers.size();
 }
 
-void Ordonator::setParameters(Parameters* parameters) {
+void Scheduler::setParameters(Parameters* parameters) {
     m_parameters = parameters;
 }
 
-void Ordonator::setOutputMutex(std::mutex* outputMutex) {
+void Scheduler::setOutputMutex(std::shared_ptr<std::mutex> outputMutex) {
     m_outputMutex = outputMutex;
 }
 
-void Ordonator::setDefaultWorkerCoordinates(const Point2D& coordinates) {
+void Scheduler::setDefaultWorkerCoordinates(const Point2D& coordinates) {
     m_defaultWorkerCoordinates = coordinates;
 }
 
-void Ordonator::setMaxTaskWorkerSize(const int& maxTaskSize) {
+void Scheduler::setMaxTaskWorkerSize(const int& maxTaskSize) {
     m_maxTaskSize = maxTaskSize;
 }
 
-std::shared_ptr<Worker> Ordonator::getWorker(const int& workerId) const {
+std::shared_ptr<Worker> Scheduler::getWorker(const int& workerId) const {
     for (const auto& worker : m_workers) {
         if (worker->getId() == workerId)
             return worker;
@@ -136,9 +148,46 @@ std::shared_ptr<Worker> Ordonator::getWorker(const int& workerId) const {
     return nullptr;
 }
 
-void Ordonator::affectOrder(const Order& order) {
+void Scheduler::affectOrder(const Order& order) {
     int idleWorkerId = getIdleWorker();
+    if (idleWorkerId < 0) {
+
+    }
     auto idleWorker = getWorker(idleWorkerId);
     auto prepareTask = TaskFactory::createPrepareOrderTask(order, idleWorker);
     affectTaskToWorker(prepareTask, idleWorkerId);
+}
+
+
+std::shared_ptr<Task> Scheduler::fetchNextTask() {
+    std::lock_guard<std::mutex> lock(m_schedulerMutex);
+    if (!m_taskQueue.empty()) {
+        auto task = m_taskQueue.front();
+        m_taskQueue.pop();
+        return task;
+    }
+    return nullptr;
+}
+
+
+void Scheduler::storeTask(std::shared_ptr<Task> task) {
+    std::lock_guard<std::mutex> lock(m_schedulerMutex);
+    m_taskQueue.push(task);
+}
+
+
+void Scheduler::scheduleThread() {
+    while (!m_stopThread) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(refreshThreadTimeInMs));
+
+        std::shared_ptr<Task> task = fetchNextTask();
+        if (task) {
+            int idleWorkerId = getIdleWorker();
+            if (idleWorkerId != -1) {
+                affectTaskToWorker(task, idleWorkerId);
+            } else {
+                storeTask(task);
+            }
+        }
+    }
 }
