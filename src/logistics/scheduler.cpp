@@ -191,3 +191,12 @@ void Scheduler::scheduleThread() {
         }
     }
 }
+
+void Scheduler::stopScheduler() {
+    m_stopThread = true;
+    if (m_schedulerThread.joinable()) {
+        m_schedulerThread.join();
+    }
+    m_workers.clear();
+    m_taskQueue = std::queue<std::shared_ptr<Task>>();
+}

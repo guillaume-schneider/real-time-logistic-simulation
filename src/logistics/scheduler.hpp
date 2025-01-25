@@ -69,6 +69,7 @@ public:
     const std::vector<std::shared_ptr<Worker>>& getWorkers() const {
         return m_workers;
     }
+    void stopScheduler();
 };
 
 #endif

@@ -10,7 +10,7 @@
 
 struct ActionDescription {
     std::string name; // Action name
-    int processingTime; // Execution time
+    long long processingTime; // Execution time
     int order; // Order of the action
 };
 
@@ -54,8 +54,8 @@ public:
         return m_actions;
     }
 
-    int getDuration() const {
-        int duration = 0;
+    long long getDuration() const {
+        long long duration = 0;
         for (const auto& action : m_actions) {
             duration += action->getProcessingTime();
         }

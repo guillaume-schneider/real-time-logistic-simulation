@@ -7,13 +7,13 @@
 class Actionnable {
 protected:
     std::string m_name;
-    int m_processingTime;
+    long long m_processingTime;
 public:
-    explicit Actionnable(const std::string& name, int time) : m_name(name), m_processingTime(time) {}
+    explicit Actionnable(const std::string& name, long long time) : m_name(name), m_processingTime(time) {}
     virtual ~Actionnable() = default;
 
     virtual void execute() = 0;
-    int getProcessingTime() { return m_processingTime; }
+    long long getProcessingTime() { return m_processingTime; }
 
     void displayProcessingTime() const {
         std::cout << "Processing time: " << m_processingTime << " ms" << std::endl;

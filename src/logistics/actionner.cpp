@@ -98,11 +98,11 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
             if (elapsedMs >= (description.processingTime / timescale))
                 currentActionName = task->getName() +  " (" + description.name + ")";
         }
-        
+    
         // d) Calcul de la progression [0..1]
         float progress = elapsedMs / realDurationMs;
         if (progress > 1.0f) progress = 1.0f;
-
+    
         // e) Afficher la barre
         {
             std::lock_guard<std::mutex> lock(*m_outputMutex);

@@ -76,6 +76,7 @@ int main(int argc, char* argv[]) {
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
         if (elapsed >= simDuration) break;
     }
+    scheduler.stopScheduler();
 
     return 0;
 }
