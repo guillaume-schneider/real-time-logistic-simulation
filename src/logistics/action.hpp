@@ -2,14 +2,7 @@
 #define ACTION_HPP_
 
 #include <iostream>
-#include <vector>
-#include <memory>
-#include <thread>
-#include <chrono>
-#include <atomic>
-#include <mutex>
 #include <string>
-#include <functional>
 
 class Actionnable {
 protected:
@@ -28,14 +21,6 @@ public:
 
     const std::string getName() const {
         return m_name;
-    }
-};
-
-class Move : public Actionnable {
-public:
-    explicit Move(const std::string& name, int time) : Actionnable(name, time) {}
-
-    void execute() override {
     }
 };
 

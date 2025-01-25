@@ -10,6 +10,7 @@
 #include "stock/reference/reference_manager.hpp"
 #include "parameters.hpp"
 #include "logistics/ordonator.hpp"
+#include "logistics/site.hpp"
 
 
 class Initializer {
@@ -34,7 +35,7 @@ public:
     Initializer& operator=(const Initializer&) = delete;
     bool injectArguments(int argc, char* argv[]);
     void loadData(ReferenceManager& refManager, ProductDatabase& productDb,
-        OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator);
+        OrderDatabase& orderDb, Parameters& parameters, Ordonator& ordonator, Site& site);
 };
 
 

@@ -19,7 +19,6 @@ protected:
     std::atomic<bool> m_stopThread{false};    // Indique si le thread doit s'arrêter
     std::mutex m_taskMutex;                   // Mutex pour synchronisation
     Parameters* m_parameters;
-    Point2D m_currentCoodinates;
     std::mutex* m_outputMutex;                // Mutex global pour l'affichage
     std::thread m_workerThread;               // Thread pour l'exécution
     std::queue<std::shared_ptr<Task>> m_taskQueue;
@@ -34,17 +33,13 @@ protected:
 public:
     Actionner();
     Actionner(int actionnerId, const std::string& name, std::mutex* outputMtx,
-              Parameters* parameters, const Point2D& currentLocation,
-              const int maxTaskSize);
+              Parameters* parameters, const int maxTaskSize);
     Actionner(const Actionner& other);
     virtual ~Actionner();
     bool submitTask(std::shared_ptr<Task> task);
     bool isBusy() const;
     bool hasTask() const;
     void setParameters(Parameters* parameters);
-    void setCoordinates(const Point2D& coordinates);
-    void setCoordinates(const double& x, const double& y);
-    const Point2D& getCoordinates() const;
 };
 
 #endif

@@ -1,5 +1,22 @@
 {
     "worker": 1,
     "forklift": 5,
-    "carrier": 5
+    "carrier": 5,
+    "site": {
+        "address": "",
+        "coordinates": {
+            "site": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "delivery_platform": {
+                "x": 0.5,
+                "y": 0.5
+            },
+            "storage_space": {
+                "x": 0.3,
+                "y": 0.3
+            }
+        }
+    }
 }

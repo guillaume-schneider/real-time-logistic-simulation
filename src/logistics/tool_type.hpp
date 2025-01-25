@@ -2,6 +2,7 @@
 #define TOOL_TYPE_HPP_
 
 enum ToolType {
+    None,
     Forklift,
     Carrier
 };

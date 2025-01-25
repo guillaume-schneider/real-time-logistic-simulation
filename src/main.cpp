@@ -1,6 +1,6 @@
 #include "logistics/actionner.hpp"
 #include "logistics/task.hpp"
-#include "logistics/action.hpp"
+#include "logistics/actions.hpp"
 #include <vector>
 #include <memory>
 #include <thread>
@@ -15,6 +15,7 @@
 #include <random>
 #include <cmath>
 #include "logistics/ordonator.hpp"
+#include "logistics/site.hpp"
 
 
 long long convertTimeInSeconds(const Time& time) {
@@ -47,11 +48,12 @@ int main(int argc, char* argv[]) {
 
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
+    Site& site = Site::getInstance();
     ProductDatabase initialProductStorage;
     OrderDatabase orderDb;
     Parameters parameters;
     Initializer::getInstance().loadData(refManager, initialProductStorage, orderDb,
-                                        parameters, ordonator);
+                                        parameters, ordonator, site);
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -63,23 +65,6 @@ int main(int argc, char* argv[]) {
 
     auto realDuration = convertTimeInSeconds(parameters.time);
     verifyTimescale(parameters);
-
-    std::vector<std::shared_ptr<Actionnable>> actions = {
-        std::make_shared<Move>("Move1", 3),
-        std::make_shared<Move>("Move2", 5),
-        std::make_shared<Move>("Move3", 2)
-    };
-
-    std::vector<std::shared_ptr<Task>> tasks = {
-        std::make_shared<Task>("Move 1", actions[0], actions[1]),
-        std::make_shared<Task>("Move 2", actions[1]),
-        std::make_shared<Task>("Move 3", actions[2])
-    };
-
-    auto id = ordonator.getIdleWorker();
-    for (auto& task : tasks) {
-        ordonator.affectTaskToWorker(task, id);
-    }
 
     auto simDuration = realDuration / parameters.timescale;
     auto start = std::chrono::steady_clock::now();

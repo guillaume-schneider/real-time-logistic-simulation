@@ -27,6 +27,11 @@ private:
     Parameters* m_parameters;
     std::mutex* m_outputMutex;
 
+    bool affectToolToWorker(const ToolType& toolType, const int& workerId);
+    void affectTaskToWorker(std::shared_ptr<Task> task, const int& workerId);
+    int affectTaskToIdleWorker(std::shared_ptr<Task> task);
+    int getIdleWorker() const;
+
     Ordonator();
 public:
     static Ordonator& getInstance() {
@@ -39,11 +44,8 @@ public:
     std::shared_ptr<Worker> createWorker(const std::string& name, bool nameById);
     void init(int workerSize);
     void loadFromFile(const std::string& filename);
-    bool affectToolToWorker(const ToolType& toolType, const int& workerId);
-    void affectTaskToWorker(std::shared_ptr<Task> task, const int& workerId);
-    int affectTaskToIdleWorker(std::shared_ptr<Task> task);
-    int getIdleWorker() const;
     size_t getWorkerSize() const;
+    void affectOrder(const Order& order);
     void setParameters(Parameters* parameters);
     void setOutputMutex(std::mutex* outputMutex);
     void setDefaultWorkerCoordinates(const Point2D& coordinates);

@@ -9,6 +9,8 @@
 #include "address.hpp"
 #include <optional>
 #include <regex>
+#include <random>
+
 
 class AddressDatabase {
 private:

@@ -1,4 +1,5 @@
 #include "ordonator.hpp"
+#include "task_factory.hpp"
 
 
 std::atomic<int> Ordonator::m_workerCounter{0};
@@ -133,4 +134,11 @@ std::shared_ptr<Worker> Ordonator::getWorker(const int& workerId) const {
             return worker;
     }
     return nullptr;
+}
+
+void Ordonator::affectOrder(const Order& order) {
+    int idleWorkerId = getIdleWorker();
+    auto idleWorker = getWorker(idleWorkerId);
+    auto prepareTask = TaskFactory::createPrepareOrderTask(order, idleWorker);
+    affectTaskToWorker(prepareTask, idleWorkerId);
 }

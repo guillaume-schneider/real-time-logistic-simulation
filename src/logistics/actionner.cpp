@@ -115,22 +115,18 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
 }
 
 Actionner::Actionner() : m_id(), m_name(), m_outputMutex(nullptr),
-        m_parameters(), m_currentCoodinates(),
-            m_maxSizeQueue()  {
+        m_parameters(), m_maxSizeQueue()  {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 Actionner::Actionner(int actionnerId, const std::string& name, std::mutex* outputMtx,
-            Parameters* parameters = nullptr, const Point2D& currentLocation = Point2D(),
-            const int maxTaskSize = 100)
+            Parameters* parameters = nullptr, const int maxTaskSize = 100)
     : m_id(actionnerId), m_name(name), m_outputMutex(outputMtx),
-        m_parameters(parameters), m_currentCoodinates(currentLocation),
-            m_maxSizeQueue(maxTaskSize) {
+        m_parameters(parameters), m_maxSizeQueue(maxTaskSize) {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 Actionner::Actionner(const Actionner& other) : m_id(other.m_id), m_name(other.m_name),
     m_outputMutex(other.m_outputMutex), m_parameters(other.m_parameters), 
-        m_currentCoodinates(other.m_currentCoodinates),
-            m_maxSizeQueue(other.m_maxSizeQueue) {
+        m_maxSizeQueue(other.m_maxSizeQueue) {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 
@@ -164,10 +160,3 @@ bool Actionner::isBusy() const {
 void Actionner::setParameters(Parameters* parameters) {
     m_parameters = parameters;
 }
-
-void Actionner::setCoordinates(const Point2D& coordinates) { m_currentCoodinates = coordinates; }
-void Actionner::setCoordinates(const double& x, const double& y) { 
-    m_currentCoodinates.x = x;
-    m_currentCoodinates.y = y;
-}
-const Point2D& Actionner::getCoordinates() const { return m_currentCoodinates; }
