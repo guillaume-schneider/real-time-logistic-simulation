@@ -151,6 +151,7 @@ std::shared_ptr<Worker> Scheduler::getWorker(const int& workerId) const {
 void Scheduler::affectOrder(std::shared_ptr<Order> order) {
     int idleWorkerId = getIdleWorker();
     if (idleWorkerId < 0) {
+        m_orderQueue.emplace(order);
         return;
     }
     auto idleWorker = getWorker(idleWorkerId);
@@ -159,20 +160,20 @@ void Scheduler::affectOrder(std::shared_ptr<Order> order) {
 }
 
 
-std::shared_ptr<Task> Scheduler::fetchNextTask() {
+std::shared_ptr<Order> Scheduler::fetchNextOrder() {
     std::lock_guard<std::mutex> lock(m_schedulerMutex);
-    if (!m_taskQueue.empty()) {
-        auto task = m_taskQueue.front();
-        m_taskQueue.pop();
-        return task;
+    if (!m_orderQueue.empty()) {
+        auto order = m_orderQueue.front();
+        m_orderQueue.pop();
+        return order;
     }
     return nullptr;
 }
 
 
-void Scheduler::storeTask(std::shared_ptr<Task> task) {
+void Scheduler::storeOrder(std::shared_ptr<Order> order) {
     std::lock_guard<std::mutex> lock(m_schedulerMutex);
-    m_taskQueue.push(task);
+    m_orderQueue.push(order);
 }
 
 
@@ -180,13 +181,15 @@ void Scheduler::scheduleThread() {
     while (!m_stopThread) {
         std::this_thread::sleep_for(std::chrono::milliseconds(refreshThreadTimeInMs));
 
-        std::shared_ptr<Task> task = fetchNextTask();
-        if (task) {
+        std::shared_ptr<Order> order = fetchNextOrder();
+        if (order) {
             int idleWorkerId = getIdleWorker();
             if (idleWorkerId != -1) {
-                affectTaskToWorker(task, idleWorkerId);
+                auto idleWorker = getWorker(idleWorkerId);
+                auto prepareTask = TaskFactory::createPrepareOrderTask(order, idleWorker);
+                affectTaskToWorker(prepareTask, idleWorkerId);            
             } else {
-                storeTask(task);
+                storeOrder(order);
             }
         }
     }
@@ -198,6 +201,18 @@ void Scheduler::stopScheduler() {
         m_schedulerThread.join();
     }
     m_workers.clear();
-    m_taskQueue = std::queue<std::shared_ptr<Task>>();
+    m_orderQueue = std::queue<std::shared_ptr<Order>>();
 }
 
+bool Scheduler::hasRemainingTask() const {
+    return !m_orderQueue.empty();
+}
+
+bool Scheduler::areWorkersIdle() const {
+    for (auto worker : m_workers) {
+        if (worker->hasTask() || worker->isBusy()) {
+            return false;
+        }
+    }
+    return true;
+}

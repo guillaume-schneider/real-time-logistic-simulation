@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
         if (elapsed >= simDuration) break;
+        if (!scheduler.hasRemainingTask() && scheduler.areWorkersIdle()) break;
     }
     scheduler.stopScheduler();
 

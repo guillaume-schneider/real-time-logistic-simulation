@@ -33,7 +33,7 @@ private:
 
     std::thread m_schedulerThread;
     bool m_stopThread;
-    std::queue<std::shared_ptr<Task>> m_taskQueue;
+    std::queue<std::shared_ptr<Order>> m_orderQueue;
     std::mutex m_schedulerMutex;
 
     bool affectToolToWorker(const ToolType& toolType, const int& workerId);
@@ -41,8 +41,8 @@ private:
     int affectTaskToIdleWorker(std::shared_ptr<Task> task);
     int getIdleWorker() const;
 
-    std::shared_ptr<Task> fetchNextTask();
-    void storeTask(std::shared_ptr<Task> task);
+    std::shared_ptr<Order> fetchNextOrder();
+    void storeOrder(std::shared_ptr<Order> task);
     virtual void scheduleThread() final;
 
     Scheduler();
@@ -69,6 +69,8 @@ public:
     const std::vector<std::shared_ptr<Worker>>& getWorkers() const {
         return m_workers;
     }
+    bool hasRemainingTask() const;
+    bool areWorkersIdle() const;
     void stopScheduler();
 };
 
