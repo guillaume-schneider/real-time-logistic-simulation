@@ -1,0 +1,89 @@
+@startuml
+
+entity ProductDatabase {
+    * string product_reference
+    int productNumber
+}
+
+entity Product {
+    * string serialNumber
+    --
+    * string productReference
+    Point2D coordinates
+}
+
+entity Logistics {
+    * Site site
+    int worker_count
+    int forklift_count
+    int carrier_count
+}
+
+entity Site {
+    * Point2D site_coordinates
+    --
+    Point2D delivery_platform_coordinates
+    Point2D storage_space_coordinates
+    Address address
+}
+
+entity Orders {
+    * string product_reference
+    Time order_time
+    Author author
+    Address delivery_address
+    --
+    string serialNumber
+    Time deliveryTime
+}
+
+entity Author {
+    * string name
+    string contact
+}
+
+entity Address {
+    * string addressId
+    string postal_code
+    string street
+    string city
+    string country
+}
+
+entity Reference {
+    * string referenceId
+    string name
+    string category
+    string subcategory
+    string year
+}
+
+entity AddressDatabase {
+    * string addressId
+    Point2D coordinates
+}
+
+entity Parameters {
+    * Time simulationTime
+    float timescale
+}
+
+entity Time {
+    float days
+    float hours
+    float minutes
+    float seconds
+}
+
+ProductDatabase::product_reference "1" -- "0..*" Product::productReference
+Product::serialNumber "1" -- "0..1" Orders::serialNumber
+Logistics::site "1" -- "1" Site
+Site::address "1" -- "1" Address::addressId
+Orders::delivery_address "1" -- "1" Address::addressId
+Orders::author "1" -- "1" Author
+Orders::product_reference "1" -- "1" ProductDatabase::product_reference
+Reference::referenceId "1" -- "0..*" ProductDatabase::product_reference
+AddressDatabase::addressId "1" -- "1" Address::addressId
+Parameters::simulationTime "1" -- "1" Time
+
+@enduml
