@@ -5,12 +5,15 @@
 #include "tool_type.hpp"
 #include "task.hpp"
 #include "../stock/order/order.hpp"
+#include "../stock/product/product.hpp"
+#include <memory>
 
 class Worker : public Actionner {
 private:
     ToolType m_currentTool;
     float m_speed;
     Order* m_currentOrder;
+    std::unique_ptr<Product> m_currentProduct;
     Point2D m_currentCoodinates;
 public:
     Worker() : Actionner(), m_speed(5.0f), m_currentTool(None), m_currentCoodinates(Point2D()), m_currentOrder(nullptr) {}
@@ -46,6 +49,22 @@ public:
 
     Order* getOrder() const {
         return m_currentOrder;
+    }
+
+    void takeProduct(std::unique_ptr<Product> product) {
+        m_currentProduct = std::move(product);
+    }
+
+    std::unique_ptr<Product> releaseProduct() {
+        if (!m_currentProduct) {
+            // No product to deposit
+            std::cerr << "Worker is not holding any product to deposit.\n";
+            return nullptr;
+        }
+
+        auto resultProduct = std::move(m_currentProduct);
+        m_currentProduct.reset();
+        return resultProduct;
     }
 
     void setCoordinates(const Point2D& coordinates) { m_currentCoodinates = coordinates; }

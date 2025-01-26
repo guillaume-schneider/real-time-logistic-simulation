@@ -34,7 +34,7 @@ public:
     Initializer(const Initializer&) = delete;
     Initializer& operator=(const Initializer&) = delete;
     bool injectArguments(int argc, char* argv[]);
-    void loadData(ReferenceManager& refManager, ProductDatabase& productDb,
+    void loadData(ReferenceManager& refManager,
         OrderDatabase& orderDb, Parameters& parameters, Scheduler& ordonator, Site& site);
 };
 

@@ -62,6 +62,24 @@ public:
            << ", Reference: " << product.m_reference << "]";
         return os;
     }
+
+    static std::string toString(const ProductReference& product) {
+        return product.m_category + product.m_subCategory + product.m_year.substr(2) +
+            product.m_reference;
+    }
+
+    static ProductReference fromString(const std::string& reference) {
+        if (reference.size() < 10) {
+            throw std::invalid_argument("Invalid reference format: " + reference);
+        }
+
+        std::string category = reference.substr(0, 2);        // First 2 characters (e.g., "EL")
+        std::string subCategory = reference.substr(2, 2);     // Next 2 characters (e.g., "PH")
+        std::string year = "20" + reference.substr(4, 2);     // Next 2 characters prefixed by "20" (e.g., "24")
+        std::string counter = reference.substr(6);           // Remaining characters (e.g., "0002")
+
+        return ProductReference("", category, subCategory, year, reference);
+    }
 };
 
 #endif // PRODUCTREFERENCE_HPP_

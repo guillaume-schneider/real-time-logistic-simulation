@@ -24,11 +24,11 @@ void Actionner::threadLoop() {
             if (!m_taskQueue.empty()) {
                 currentTask = m_taskQueue.front();
                 m_taskQueue.pop();
+                m_isBusy = true;
             }
         }
 
         if (!currentTask) continue;
-        m_isBusy = true;
 
         std::thread loadingThread(&Actionner::loadingBar, this, currentTask);
         currentTask->execute();

@@ -60,7 +60,7 @@ public:
     void init(int workerSize);
     void loadFromFile(const std::string& filename);
     size_t getWorkerSize() const;
-    void affectOrder(const Order& order);
+    void affectOrder(std::shared_ptr<Order> order);
     void setParameters(Parameters* parameters);
     void setOutputMutex(std::shared_ptr<std::mutex> outputMutex);
     void setDefaultWorkerCoordinates(const Point2D& coordinates);

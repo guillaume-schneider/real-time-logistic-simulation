@@ -113,7 +113,7 @@ int Scheduler::affectTaskToIdleWorker(std::shared_ptr<Task> task) {
 int Scheduler::getIdleWorker() const {
     int workerId = -1;
     for (auto& worker : m_workers) {
-        if (!worker->hasTask()) {
+        if (!worker->hasTask() && !worker->isBusy()) {
             workerId = worker->getId();
         }
     }
@@ -148,10 +148,10 @@ std::shared_ptr<Worker> Scheduler::getWorker(const int& workerId) const {
     return nullptr;
 }
 
-void Scheduler::affectOrder(const Order& order) {
+void Scheduler::affectOrder(std::shared_ptr<Order> order) {
     int idleWorkerId = getIdleWorker();
     if (idleWorkerId < 0) {
-
+        return;
     }
     auto idleWorker = getWorker(idleWorkerId);
     auto prepareTask = TaskFactory::createPrepareOrderTask(order, idleWorker);
@@ -200,3 +200,4 @@ void Scheduler::stopScheduler() {
     m_workers.clear();
     m_taskQueue = std::queue<std::shared_ptr<Task>>();
 }
+

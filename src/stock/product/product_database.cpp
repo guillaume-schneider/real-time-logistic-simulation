@@ -5,11 +5,14 @@
 #include "../../logistics/coordinates.hpp"
 #include <regex>
 
+
 using json = nlohmann::json;
+
 
 constexpr size_t categoryLength = 4;       
 constexpr size_t subCategoryLength = 3;    
 constexpr size_t yearLength = 2;
+
 
 std::string ProductDatabase::extractProductReference(const std::string& serialNumber) {
     // Regex pour valider et extraire la référence produit
@@ -23,9 +26,11 @@ std::string ProductDatabase::extractProductReference(const std::string& serialNu
     }
 }
 
+
 std::string ProductDatabase::createSerialNumber(std::string reference) {
     return reference + std::to_string(m_products[reference].size() + 1);
 }
+
 
 bool ProductDatabase::init(const std::string& filename, ReferenceManager& refManager) {
     m_refManager = &refManager;
@@ -77,10 +82,6 @@ ProductDatabase::ProductDatabase(const std::string& filename, ReferenceManager& 
 }
 
 
-// ------------------------------------------------------------------
-// Créer "number" produits pour une référence donnée
-// ------------------------------------------------------------------
-
 void ProductDatabase::createProduct(const std::string& reference, int number)
 {
     if (!m_refManager) {
@@ -102,23 +103,30 @@ void ProductDatabase::createProduct(const std::string& reference, int number)
     }
 }
 
-void ProductDatabase::moveProduct(const std::string& serialNumber, ProductDatabase& destination) {
+std::unique_ptr<Product> ProductDatabase::getProduct(const std::string& serialNumber) {
     std::string productReference = extractProductReference(serialNumber);
 
     auto& sourceVec = m_products[productReference];
     if (sourceVec.empty()) {
-        std::cerr << "Error: No product found with reference '" << productReference << "'\n";
-        return;
+        std::cerr << "ProductDatabase::moveProduct Error: No product found with reference '" << productReference << "'\n";
+        return nullptr;
     }
 
-    auto& destinationVec = destination.m_products[productReference];
-    destinationVec.push_back(std::move(sourceVec.back()));
-    sourceVec.pop_back();
+    auto it = std::find_if(sourceVec.begin(), sourceVec.end(), [&serialNumber](const std::unique_ptr<Product>& product) {
+        return product->getSerialNumber() == serialNumber;
+    });
+
+    if (it == sourceVec.end()) {
+        std::cerr << "ProductDatabase::moveProduct Error: No product found with serial number '" << serialNumber << "'\n";
+        return nullptr;
+    }
+
+    std::unique_ptr<Product> resultProduct = std::move(*it);
+    sourceVec.erase(it);
+    return resultProduct;
 }
 
-// ------------------------------------------------------------------
-// Ajouter un produit
-// ------------------------------------------------------------------
+
 void ProductDatabase::addProduct(std::unique_ptr<Product> product)
 {
     const std::string& referenceKey = product->getProductReference();
@@ -130,17 +138,15 @@ void ProductDatabase::addProduct(std::unique_ptr<Product> product)
                            });
 
     if (it != productsVec.end()) {
-        std::cerr << "Error: A product with the serial number '"
+        std::cerr << "ProductDatabase::addProduct Error:: A product with the serial number '"
                   << product->getSerialNumber() << "' already exists.\n";
         return;
     }
 
-    productsVec.push_back(std::move(product));
+    productsVec.emplace_back(std::move(product));
 }
 
-// ------------------------------------------------------------------
-// Supprimer un produit par son numéro de série
-// ------------------------------------------------------------------
+
 void ProductDatabase::removeProduct(const std::string& serialNumber)
 {
     for (auto& [referenceKey, productsVec] : m_products) {
@@ -155,14 +161,12 @@ void ProductDatabase::removeProduct(const std::string& serialNumber)
         }
     }
 
-    std::cerr << "Error: No product found with the serial number '"
+    std::cerr << "ProductDatabase::removeProduct Error:: No product found with the serial number '"
               << serialNumber << "'.\n";
 }
 
-// ------------------------------------------------------------------
-// Trouver un produit par numéro de série
-// ------------------------------------------------------------------
-Product* ProductDatabase::findProduct(const std::string& serialNumber) {
+
+const Product* ProductDatabase::findProduct(const std::string& serialNumber) {
     for (auto& [referenceKey, productsVec] : m_products) {
         auto it = std::find_if(productsVec.begin(), productsVec.end(),
                                [&serialNumber](const std::unique_ptr<Product>& product) {
@@ -175,9 +179,7 @@ Product* ProductDatabase::findProduct(const std::string& serialNumber) {
     return nullptr;
 }
 
-// ------------------------------------------------------------------
-// Lister tous les produits
-// ------------------------------------------------------------------
+
 void ProductDatabase::listProducts() const
 {
     if (m_products.empty()) {
@@ -194,9 +196,7 @@ void ProductDatabase::listProducts() const
     }
 }
 
-// ------------------------------------------------------------------
-// Obtenir le nombre total de produits
-// ------------------------------------------------------------------
+
 size_t ProductDatabase::getProductCount() const
 {
     size_t count = 0;
@@ -206,9 +206,7 @@ size_t ProductDatabase::getProductCount() const
     return count;
 }
 
-// ------------------------------------------------------------------
-// Lister les produits par catégorie
-// ------------------------------------------------------------------
+
 void ProductDatabase::listProductsByCategory() const
 {
     if (m_products.empty()) {
@@ -231,4 +229,21 @@ void ProductDatabase::listProductsByCategory() const
     for (const auto& [category, count] : categoryCount) {
         std::cout << "- " << category << ": " << count << " products\n";
     }
+}
+
+std::unique_ptr<Product> ProductDatabase::getProductByCategoryAndSubcategory(const std::string& category, const std::string& subcategory) {
+    for (auto& [reference, productVec] : m_products) {
+        for (auto it = productVec.begin(); it != productVec.end(); ++it) {
+            auto reference = ProductReference::fromString((*it)->getProductReference());
+            if (reference.getCategory() == category && reference.getSubCategory() == subcategory) {
+                std::unique_ptr<Product> product = std::move(*it);
+                productVec.erase(it);
+                return std::move(product);
+            }
+        }
+    }
+
+    // No matching product found
+    std::cerr << "ProductDatabase::getProductByCategoryAndSubcategory Error: No product found for category: " << category << " and subcategory: " << subcategory << std::endl;
+    return nullptr;
 }

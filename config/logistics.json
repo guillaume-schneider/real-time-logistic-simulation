@@ -1,5 +1,5 @@
 {
-    "worker": 1,
+    "worker": 5,
     "forklift": 5,
     "carrier": 5,
     "site": {

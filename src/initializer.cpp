@@ -60,7 +60,7 @@ bool Initializer::injectArguments(int argc, char* argv[]) {
 
 
 
-void loadDataSite(const std::string& filename, Site& site) {
+void loadCoordinatesSite(const std::string& filename, Site& site) {
     std::ifstream logisticsFile(filename);
 
     if (!logisticsFile.is_open()) {
@@ -118,13 +118,13 @@ void loadDataSite(const std::string& filename, Site& site) {
 }
 
 
-void Initializer::loadData(ReferenceManager& refManager, ProductDatabase& productDb,
+void Initializer::loadData(ReferenceManager& refManager,
     OrderDatabase& orderDb, Parameters& parameters, Scheduler& ordonator, Site& site) {
     refManager.loadFromJson(m_referencesPath);
-    productDb.init(m_productsPath, refManager);
+    site.init(m_productsPath);
     orderDb.loadFromFile(m_ordersPath);
     parameters = ParametersParser::parseParameters(m_parametersPath);
     ordonator.setParameters(&parameters);
     ordonator.loadFromFile(m_logisticsPath);
-    loadDataSite(m_logisticsPath, site);
+    loadCoordinatesSite(m_logisticsPath, site);
 }

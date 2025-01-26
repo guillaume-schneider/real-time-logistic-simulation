@@ -36,7 +36,7 @@ void OrderDatabase::addOrder(const Order& order) {
         std::cerr << "Order database already contains " << order.orderReference << ".\n"; 
         return;
     }
-    m_orders[order.orderReference] = order;
+    m_orders[order.orderReference] = std::make_shared<Order>(order);
 }
 
 
@@ -45,7 +45,7 @@ bool OrderDatabase::removeOrder(const std::string& orderReference) {
 }
 
 
-Order& OrderDatabase::createOrder(
+std::shared_ptr<Order> OrderDatabase::createOrder(
     const std::string& productReference,
     const date::sys_seconds& orderTime,
     const Author& author,
@@ -53,33 +53,33 @@ Order& OrderDatabase::createOrder(
 ) {
     Order order = OrderFactory::createOrder(productReference, orderTime,
                                             author, deliveryAddress);
-    m_orders[order.orderReference] = order;
+    m_orders[order.orderReference] = std::make_shared<Order>(order);
     return m_orders[order.orderReference];
 }
 
 
-std::optional<Order> OrderDatabase::getOrder(const std::string& orderReference) const {
+std::shared_ptr<Order> OrderDatabase::getOrder(const std::string& orderReference) const {
     auto it = m_orders.find(orderReference);
     if (it != m_orders.end()) {
         return it->second;
     }
-    return std::nullopt;
+    return nullptr;
 }
 
 
-std::vector<Order> OrderDatabase::getOrdersByProductReference(const std::string& productReference) const {
-    std::vector<Order> result;
-    for (const auto& [ref, order] : m_orders) {
-        if (order.productReference == productReference) {
-            result.push_back(order);
+std::vector<std::shared_ptr<Order>> OrderDatabase::getOrdersByProductReference(const std::string& productReference) const {
+    std::vector<std::shared_ptr<Order>> result;
+    for (const auto [ref, order] : m_orders) {
+        if (order->productReference == productReference) {
+            result.emplace_back(order);
         }
     }
     return result;
 }
 
 
-std::vector<Order> OrderDatabase::getOrders() const {
-    std::vector<Order> allOrders;
+std::vector<std::shared_ptr<Order>> OrderDatabase::getOrders() const {
+    std::vector<std::shared_ptr<Order>> allOrders;
     allOrders.reserve(m_orders.size());
     std::transform(m_orders.begin(), m_orders.end(), std::back_inserter(allOrders),
                    [](const auto& pair) { return pair.second; });
@@ -138,32 +138,32 @@ void OrderDatabase::saveToFile(const std::string& filename) const {
     for (const auto& [ref, order] : m_orders) {
         json item;
 
-        item["order_reference"] = order.orderReference;
-        item["product_reference"] = order.productReference;
-        item["order_time"] = date::format("%FT%TZ", order.orderTime);
+        item["order_reference"] = order->orderReference;
+        item["product_reference"] = order->productReference;
+        item["order_time"] = date::format("%FT%TZ", order->orderTime);
 
-        if (order.serialNumber.has_value()) {
-            item["serialNumber"] = *order.serialNumber;
+        if (order->serialNumber.has_value()) {
+            item["serialNumber"] = *order->serialNumber;
         } else {
             item["serialNumber"] = nullptr;
         }
 
-        if (order.deliveryTime.has_value()) {
-            item["delivery_time"] = date::format("%FT%TZ", *order.deliveryTime);
+        if (order->deliveryTime.has_value()) {
+            item["delivery_time"] = date::format("%FT%TZ", *order->deliveryTime);
         } else {
             item["delivery_time"] = nullptr;
         }
 
         item["author"] = {
-            {"name", order.author.name},
-            {"contact", order.author.contact}
+            {"name", order->author.name},
+            {"contact", order->author.contact}
         };
 
         item["delivery_address"] = {
-            {"street", order.deliveryAddress.street},
-            {"city", order.deliveryAddress.city},
-            {"country", order.deliveryAddress.country},
-            {"postal_code", order.deliveryAddress.zip}
+            {"street", order->deliveryAddress.street},
+            {"city", order->deliveryAddress.city},
+            {"country", order->deliveryAddress.country},
+            {"postal_code", order->deliveryAddress.zip}
         };
         j.push_back(item);
     }
@@ -174,6 +174,6 @@ void OrderDatabase::saveToFile(const std::string& filename) const {
 
 void OrderDatabase::printAllOrders() const {
     for (const auto& [ref, order] : m_orders) {
-        std::cout << order.toString() << "\n";
+        std::cout << order->toString() << "\n";
     }
 }

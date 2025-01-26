@@ -49,18 +49,17 @@ int main(int argc, char* argv[]) {
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
     Site& site = Site::getInstance();
-    ProductDatabase initialProductStorage;
-    OrderDatabase orderDb;
+    OrderDatabase& orderDb = OrderDatabase::getInstance();
     Parameters parameters;
-    Initializer::getInstance().loadData(refManager, initialProductStorage, orderDb,
+    Initializer::getInstance().loadData(refManager, orderDb,
                                         parameters, scheduler, site);
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(5, 100);
     AddressDatabase& addressDb = AddressDatabase::getInstance();
-    for (const auto& order : orderDb.getOrders()) {
-        addressDb.addAddress(order.deliveryAddress, dis(gen), dis(gen));
+    for (auto order : orderDb.getOrders()) {
+        addressDb.addAddress(order->deliveryAddress, dis(gen), dis(gen));
         scheduler.affectOrder(order);
     }
 
