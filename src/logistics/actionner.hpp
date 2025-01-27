@@ -10,6 +10,7 @@
 #include "../parameters.hpp"
 #include "coordinates.hpp"
 #include <memory>
+#include <atomic>
 
 
 class Actionner {
