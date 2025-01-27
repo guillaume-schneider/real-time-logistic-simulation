@@ -27,19 +27,3 @@ file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES})
-
-set(FETCHCONTENT_QUIET OFF)
-
-include(FetchContent)
-
-FetchContent_Declare(
-    date
-    GIT_REPOSITORY https://github.com/HowardHinnant/date.git
-    GIT_TAG        master # You can use a specific tag like v3.0.0
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE
-)
-
-FetchContent_MakeAvailable(date)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE date::date)
