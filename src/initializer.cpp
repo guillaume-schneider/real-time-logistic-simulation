@@ -1,6 +1,7 @@
 #include "initializer.hpp"
 #include "parameters_parser.hpp"
 #include "logistics/scheduler.hpp"
+#include <atomic>
 
 
 bool Initializer::doFileContains(nlohmann::json config, const std::string& key) {

@@ -26,7 +26,7 @@ private:
     bool doFileContains(nlohmann::json config, const std::string& key);
     void parseJsonFile(const std::string& configFilePath);
 public:
-    static Initializer& Initializer::getInstance() {
+    static Initializer& getInstance() {
         static Initializer instance;
         return instance;
     }

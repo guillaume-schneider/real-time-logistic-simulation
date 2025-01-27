@@ -1,7 +1,7 @@
 {
-    "references": "C:\\Users\\NULL\\Documents\\Project\\pr72-project\\config\\references.json",
-    "products": "C:\\Users\\NULL\\Documents\\Project\\pr72-project\\config\\products.json",
-    "orders": "C:\\Users\\NULL\\Documents\\Project\\pr72-project\\config\\orders.json",
-    "parameters": "C:\\Users\\NULL\\Documents\\Project\\pr72-project\\config\\parameters.json",
-    "logistics": "C:\\Users\\NULL\\Documents\\Project\\pr72-project\\config\\logistics.json"
+    "references": "/home/guillaume/Course/PR72/pr72-project/config/references.json",
+    "products": "/home/guillaume/Course/PR72/pr72-project/config/products.json",
+    "orders": "/home/guillaume/Course/PR72/pr72-project/config/orders.json",
+    "parameters": "/home/guillaume/Course/PR72/pr72-project/config/parameters.json",
+    "logistics": "/home/guillaume/Course/PR72/pr72-project/config/logistics.json"
 }

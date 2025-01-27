@@ -15,7 +15,12 @@ private:
         auto now = std::chrono::system_clock::now();
         auto now_time_t = std::chrono::system_clock::to_time_t(now);
         std::tm result;
-        gmtime_s(&result, &now_time_t);
+
+#ifdef _WIN32
+        gmtime_s(&result, &now_time_t); // Windows
+#else
+        gmtime_r(&now_time_t, &result); // Linux/Unix
+#endif
 
         oss << "ORD-"
             << std::put_time(&result, "%Y%m%d-%H%M%S") << "-"
