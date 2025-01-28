@@ -1,0 +1,43 @@
+@startuml
+actor Main
+participant "Scheduler" as S
+participant "Actionner" as A
+participant "Task" as T
+participant "Worker" as W
+
+Main -> S: Initialize Scheduler
+Main -> S: Set Output Mutex
+Main -> A: Create Workers
+S -> A: Start Scheduler Thread
+
+== Scheduler Thread Logic ==
+group Fetch and Assign Tasks
+    S -> S: Fetch Order from Queue
+    S -> W: Check for Idle Worker
+    alt Idle Worker Available
+        S -> W: Assign Task
+    else No Idle Worker
+        S -> S: Requeue Order
+    end
+end
+
+== Worker Thread Logic ==
+group Worker Executes Task
+    W -> T: Retrieve Task
+    W -> T: Execute Task
+    W -> A: Loading Bar Progress
+    alt Task Complete
+        W -> S: Notify Task Completion
+    end
+end
+
+== Mutex and Thread Synchronization ==
+group Mutex Handling
+    S -> S: Lock Mutex for Scheduler Actions
+    W -> A: Lock Mutex for Progress Output
+    W -> W: Unlock Mutex After Action
+end
+
+Main -> S: Stop Scheduler
+S -> A: Join Worker Threads
+@enduml

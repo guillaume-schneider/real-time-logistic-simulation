@@ -1,0 +1,26 @@
+compilation_database_dir: ./build # Path to the directory containing compile_commands.json
+output_directory: docs/diagrams/strategy_pattern.puml
+diagrams:
+  class_diagram:
+    type: class
+    glob:
+      - src/**/*.hpp
+      - src/**/*.cpp
+    include:
+      elements:
+        - Task
+        - Actionnable
+        - ActionDescription
+        - Move
+        - TakeProduct
+        - Worker
+        - ReleaseProduct
+        - Scheduler
+        - Actionner
+        - TaskFactory
+    exclude:
+      namespaces:
+        - std
+        - nlohmann
+      paths:
+        - includes/**/*

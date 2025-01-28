@@ -1,0 +1,528 @@
+@startuml
+scale 0.5
+abstract "Actionnable" as C_0005779141798409352122
+abstract C_0005779141798409352122 {
++Actionnable(const std::string & name, long long time) : void
++~Actionnable() = default : void
+..
++displayProcessingTime() const : void
+{abstract} +execute() = 0 : void
++getName() const : const std::string
++getProcessingTime() : long long
+__
+#m_name : std::string
+#m_processingTime : long long
+}
+class "ActionDescription" as C_0001680707169970652848
+class C_0001680707169970652848 {
+__
++cumulatedProcessingTime : long long
++name : std::string
++order : int
++processingTime : long long
+}
+class "Task" as C_0012685396697071441978
+class C_0012685396697071441978 {
++Task() = default : void
++Task(const std::string & name) : void
++Task<Actions...>(const std::string & name, std::shared_ptr<Actions>... actions) : void
+..
++addAction(std::shared_ptr<Actionnable> action) : void
++execute() : void
++getActionDescriptions() const : std::vector<ActionDescription>
++getActions() : std::vector<std::shared_ptr<Actionnable>>
++getDuration() const : long long
++getName() const : std::string
++hasExecuted() : bool
+__
+-m_actions : std::vector<std::shared_ptr<Actionnable>>
+-m_hasExecuted : bool
+-m_name : std::string
+}
+class "Time" as C_0011539893726718517993
+class C_0011539893726718517993 {
++Time() : void
+__
++days : int
++hours : int
++minutes : int
++seconds : int
+}
+class "Parameters" as C_0018024257541452379355
+class C_0018024257541452379355 {
++Parameters() : void
+__
++time : Time
++timescale : float
+}
+class "Point2D" as C_0003663583436327718788
+class C_0003663583436327718788 {
++Point2D() : void
++Point2D(double x, double y) : void
+__
++x : double
++y : double
+}
+class "Actionner" as C_0018042704236802414186
+class C_0018042704236802414186 {
++Actionner() : void
++Actionner(int actionnerId, const std::string & name, std::shared_ptr<std::mutex> outputMtx, Parameters * parameters, const int maxTaskSize) : void
++Actionner(const Actionner & other) : void
++~Actionner() : void
+..
++hasTask() const : bool
++isBusy() const : bool
+#loadingBar(std::shared_ptr<Task> task) const : void
+#printProgress(std::string taskName, float progress, int barWidth) const : void
++setParameters(Parameters * parameters) : void
++submitTask(std::shared_ptr<Task> task) : bool
+#threadLoop() : void
+__
+#m_id : int
+#m_isBusy : std::atomic<bool>
+#m_maxSizeQueue : const int
+#m_name : std::string
+#m_outputMutex : std::shared_ptr<std::mutex>
+#m_parameters : Parameters *
+#m_stopThread : std::atomic<bool>
+#m_taskCondition : std::condition_variable
+#m_taskMutex : std::mutex
+#m_taskQueue : std::queue<std::shared_ptr<Task>>
+#m_workerThread : std::thread
+}
+enum "ToolType" as C_0016068270915727952462
+enum C_0016068270915727952462 {
+None
+Forklift
+Carrier
+}
+class "ProductReference" as C_0007461687878970102337
+class C_0007461687878970102337 {
++ProductReference() = default : void
++ProductReference(const std::string & name, const std::string & category, const std::string & subCategory, const std::string & year, const std::string & reference) : void
+..
++operator!=(const ProductReference & other) const : bool
++operator==(const ProductReference & other) const : bool
+..
++display() const : void
+{static} +fromString(const std::string & reference) : ProductReference
++getCategory() const : const std::string &
++getName() const : const std::string &
++getReference() const : const std::string &
++getSubCategory() const : const std::string &
++getYear() const : const std::string &
++setCategory(const std::string & category) : void
++setName(const std::string & name) : void
++setReference(const std::string & reference) : void
++setSubCategory(const std::string & subCategory) : void
++setYear(const std::string & year) : void
+{static} +toString(const ProductReference & product) : std::string
+__
+-m_category : std::string
+-m_name : std::string
+-m_reference : std::string
+-m_subCategory : std::string
+-m_year : std::string
+}
+class "Address" as C_0001256290093684087115
+class C_0001256290093684087115 {
++Address() : void
++Address(const std::string & addrStreet, const std::string & addrCity, const std::string & addrZip, const std::string & addrCountry) : void
++Address(const Address & other) : void
++~Address() = default : void
+..
++operator=(const Address & other) : Address &
+..
+{static} +generateRandomAddress() : Address
+{static} +stringToAddress(const std::string & addressString) : Address
++toString() const : std::string
+{static} +validateAddress(const std::string & address) : bool
+__
++city : std::string
++country : std::string
++street : std::string
++zip : std::string
+}
+class "Location" as C_0013039340080790387821
+class C_0013039340080790387821 {
++Location() = default : void
++Location(Address address, Point2D coordinnates) : void
++Location(const Location & other) : void
++~Location() = default : void
+..
++operator=(const Location & other) : Location &
+..
++calculateDistance(const Location & other) : double
+__
++address : Address
++coordinates : Point2D
+}
+class "Author" as C_0014870109770026361187
+class C_0014870109770026361187 {
++Author(const std::string & authorName, const std::string & authorContact = "") : void
+..
++toString() const : std::string
+__
++contact : std::string
++name : std::string
+}
+class "Order" as C_0003755976353874626921
+class C_0003755976353874626921 {
++Order() : void
++Order(const std::string & orderReference, const std::string & productReference, const date::sys_seconds & orderTime, const Author & author, const Address & deliveryAddress) : void
+..
++toString() const : std::string
+__
++author : Author
++deliveryAddress : Address
++deliveryTime : std::optional<date::sys_seconds>
++orderReference : std::string
++orderTime : date::sys_seconds
++productReference : std::string
++serialNumber : std::optional<std::string>
+}
+class "Product" as C_0017206861160651201512
+class C_0017206861160651201512 {
++Product() = default : void
++Product(std::string serialNumber, std::string reference, Point2D coordinates) : void
++Product(const Product & other) : void
++~Product() = default : void
+..
++operator=(const Product & other) : Product &
+..
++getCoordinates() const : Point2D
++getProductReference() const : std::string
++getSerialNumber() const : std::string
++setCoordinates(const Point2D coordinates) : void
+__
+-m_coordinates : Point2D
+-m_reference : std::string
+-m_serialNumber : std::string
+}
+class "Worker" as C_0011809437179116272381
+class C_0011809437179116272381 {
++Worker() : void
++Worker(int actionnerId, const std::string & name, std::shared_ptr<std::mutex> outputMtx, Parameters * config = nullptr, const Point2D & coordinates = Point2D(), const int maxTaskSize = 100, float speed = 8.0f) : void
+..
++getCoordinates() const : const Point2D &
++getId() const : const int &
++getOrder() const : Order *
++getSpeed() const : const float &
++getTool() const : const ToolType &
++releaseProduct() : std::unique_ptr<Product>
++setCoordinates(const Point2D & coordinates) : void
++setCoordinates(const double & x, const double & y) : void
++setOrder(Order & order) : void
++setSpeed(const float & speed) : void
++setTool(const ToolType & type) : void
++takeProduct(std::unique_ptr<Product> product) : void
+__
+-m_currentCoodinates : Point2D
+-m_currentOrder : Order *
+-m_currentProduct : std::unique_ptr<Product>
+-m_currentTool : ToolType
+-m_speed : float
+}
+class "Scheduler" as C_0001371562265082181169
+class C_0001371562265082181169 {
+-Scheduler() : void
++Scheduler(const Scheduler &) = deleted : void
++~Scheduler() : void
+..
++operator=(const Scheduler &) = deleted : Scheduler &
+..
++affectOrder(std::shared_ptr<Order> order) : void
+-affectTaskToIdleWorker(std::shared_ptr<Task> task) : int
+-affectTaskToWorker(std::shared_ptr<Task> task, const int & workerId) : void
+-affectToolToWorker(const ToolType & toolType, const int & workerId) : bool
++areWorkersIdle() const : bool
++createWorker(const std::string & name, bool nameById) : std::shared_ptr<Worker>
+-fetchNextOrder() : std::shared_ptr<Order>
+-getIdleWorker() const : int
+{static} +getInstance() : Scheduler &
++getWorker(const int & workerId) const : std::shared_ptr<Worker>
++getWorkerSize() const : size_t
++getWorkers() const : const std::vector<std::shared_ptr<Worker>> &
++hasRemainingTask() const : bool
++init(int workerSize) : void
++loadFromFile(const std::string & filename) : void
++runScheduler() : void
+-scheduleThread() : void
++setDefaultWorkerCoordinates(const Point2D & coordinates) : void
++setMaxTaskWorkerSize(const int & maxTaskSize) : void
++setOutputMutex(std::shared_ptr<std::mutex> outputMutex) : void
++setParameters(Parameters * parameters) : void
++stopScheduler() : void
+-storeOrder(std::shared_ptr<Order> task) : void
+__
+-m_carrierSize : int
+-m_carrierUsedCounter : int
+-m_defaultWorkerCoordinates : Point2D
+-m_forkliftSize : int
+-m_forkliftUsedCounter : int
+-m_maxTaskSize : int
+-m_orderQueue : std::queue<std::shared_ptr<Order>>
+-m_outputMutex : std::shared_ptr<std::mutex>
+-m_parameters : Parameters *
+-m_schedulerMutex : std::mutex
+-m_schedulerThread : std::thread
+-m_stopThread : bool
+{static} -m_workerCounter : std::atomic<int>
+-m_workerSize : int
+-m_workers : std::vector<std::shared_ptr<Worker>>
+}
+class "AddressDatabase" as C_0000832345120593247401
+class C_0000832345120593247401 {
+-AddressDatabase() = default : void
++AddressDatabase(const AddressDatabase &) = deleted : void
+..
++operator=(const AddressDatabase &) = deleted : AddressDatabase &
+..
++addAddress(const Address & address, double x, double y) : void
++findByAddress(const Address & address) const : std::optional<std::string>
++findById(const std::string & id) const : std::optional<Address>
++findCoordinates(const Address & address) : std::optional<Point2D>
+-generateId(const Address & address) const : std::string
+{static} +getInstance() : AddressDatabase &
++loadDatabase(const std::string & filename) : void
+-parseAddress(const std::string & addressStr) const : Address
++printAllEntries() const : void
+-saveDatabase() const : void
+__
+-m_database : nlohmann::json
+-m_filename : std::string
+}
+class "ReferenceManager" as C_0011420875772156413584
+class C_0011420875772156413584 {
+-ReferenceManager() = default : void
++ReferenceManager(const ReferenceManager &) = deleted : void
+..
++operator=(const ReferenceManager &) = deleted : ReferenceManager
+..
++addProduct(const std::string & name, const std::string & category, const std::string & sub_category, const std::string & year) : std::string
++displayProducts() const : void
++findProductByReference(const std::string & reference) : ProductReference *
+-generateReference(const std::string & category, const std::string & sub_category, const std::string & year) : std::string
+{static} +getInstance() : ReferenceManager &
+-getNextCounter(const std::string & category, const std::string & sub_category) : int
++getProductByIndex(int index) : ProductReference
++loadFromJson(const std::string & filename) : void
+-parseJson(json & database) : void
++saveToJson(const std::string & filename) : void
+__
+-m_counters : std::unordered_map<std::string,int>
+-m_db_file : std::string
+-m_products : std::vector<ProductReference>
+}
+class "ProductDatabase" as C_0008990303450505123249
+class C_0008990303450505123249 {
++ProductDatabase() = default : void
++ProductDatabase(const ProductDatabase &) = deleted : void
++ProductDatabase(ProductDatabase &&) = default : void
++ProductDatabase(const std::string & filename, ReferenceManager & refManager) : void
+..
++operator=(const ProductDatabase &) = deleted : ProductDatabase &
++operator=(ProductDatabase &&) = default : ProductDatabase &
+..
++addProduct(std::unique_ptr<Product> product) : void
++createProduct(const std::string & reference, int number) : void
+-createSerialNumber(std::string reference) : std::string
+-extractProductReference(const std::string & serialNumber) : std::string
++findProduct(const std::string & serialNumber) : const Product *
++getProduct(const std::string & serialNumber) : std::unique_ptr<Product>
++getProductByCategoryAndSubcategory(const std::string & category, const std::string & subcategory) : std::unique_ptr<Product>
++getProductCount() const : size_t
++init(const std::string & filename, ReferenceManager & refManager) : bool
++listProducts() const : void
++listProductsByCategory() const : void
++removeProduct(const std::string & serialNumber) : void
+__
+-m_products : std::unordered_map<std::string,std::vector<std::unique_ptr<Product>>>
+-m_refManager : ReferenceManager *
+}
+class "SiteArea" as C_0016042423543052127520
+class C_0016042423543052127520 {
+__
++coordinates : Point2D
+}
+class "DeliveryPlatform" as C_0003111902286808888849
+class C_0003111902286808888849 {
+__
+}
+class "StorageSpace" as C_0012712975260978331577
+class C_0012712975260978331577 {
++StorageSpace() = default : void
+..
++getProduct(const std::string & serialNumber) : std::unique_ptr<Product>
++getProductByCategoryAndSubcat(const std::string & category, const std::string & sub) : std::unique_ptr<Product>
++init(const std::string & filename) : bool
+__
+-m_db : ProductDatabase
+}
+class "Site" as C_0001423274317303257258
+class C_0001423274317303257258 {
+-Site() = default : void
++Site(const Site &) = deleted : void
+..
++operator=(const Site &) = deleted : Site &
+..
+{static} +getInstance() : Site &
++init(const std::string & productFile) : bool
+__
++delivery : DeliveryPlatform
++storage : StorageSpace
+}
+class "Move" as C_0011937890994270573141
+class C_0011937890994270573141 {
++Move(const std::string & name, long long time, std::shared_ptr<Worker> movable, const Point2D & destination) : void
+..
++execute() : void
+__
+-m_actionner : std::shared_ptr<Worker>
+-m_destination : Point2D
+}
+class "TakeProduct" as C_0001340163226568550889
+class C_0001340163226568550889 {
++TakeProduct(const std::string & name, long long time, std::shared_ptr<Worker> worker, StorageSpace * storage, std::shared_ptr<Order> order) : void
++TakeProduct(const TakeProduct &) = deleted : void
+..
++operator=(const TakeProduct &) = deleted : TakeProduct &
+..
++execute() : void
+__
+-m_actionner : std::shared_ptr<Worker>
+-m_order : std::shared_ptr<Order>
+-m_storage : StorageSpace *
+}
+class "ReleaseProduct" as C_0014082224354344259852
+class C_0014082224354344259852 {
++ReleaseProduct(const std::string & name, long long time, std::shared_ptr<Worker> worker, DeliveryPlatform * delivery) : void
+..
++execute() : void
+__
+-m_actionner : std::shared_ptr<Worker>
+-m_delivery : DeliveryPlatform *
+}
+class "TaskFactory" as C_0001013872974579043541
+class C_0001013872974579043541 {
+{static} +createPrepareOrderTask(std::shared_ptr<Order> order, std::shared_ptr<Worker> worker) : std::shared_ptr<Task>
+{static} -getRandomIntInRange(long long min, long long max) : long long
+__
+}
+class "OrderFactory" as C_0017543753754172777613
+class C_0017543753754172777613 {
+{static} +createOrder(const std::string & productReference, const date::sys_seconds & orderTime, const Author & author, const Address & deliveryAddress) : Order
+{static} -generateOrderReference() : std::string
+__
+{static} -counter : std::atomic<int>
+}
+class "OrderDatabase" as C_0006022151812094361198
+class C_0006022151812094361198 {
+-OrderDatabase() = default : void
++OrderDatabase(const OrderDatabase &) = deleted : void
+..
++operator=(const OrderDatabase &) = deleted : OrderDatabase &
+..
++addOrder(const Order & order) : void
+-convertStringToTime(const std::string & time) : date::sys_seconds
++createOrder(const std::string & productReference, const date::sys_seconds & orderTime, const Author & author, const Address & deliveryAddress) : std::shared_ptr<Order>
+-doFileContains(const std::string & filename, const nlohmann::json_abi_v3_11_3::json & item, std::string key) : bool
+{static} +getInstance() : OrderDatabase &
++getOrder(const std::string & orderReference) const : std::shared_ptr<Order>
++getOrders() const : std::vector<std::shared_ptr<Order>>
++getOrdersByProductReference(const std::string & productReference) const : std::vector<std::shared_ptr<Order>>
++loadFromFile(const std::string & filename) : void
++printAllOrders() const : void
++removeOrder(const std::string & orderReference) : bool
++saveToFile(const std::string & filename) const : void
+__
+-m_orders : std::unordered_map<std::string,std::shared_ptr<Order>>
+}
+class "Initializer" as C_0005059565092965768394
+class C_0005059565092965768394 {
+-Initializer() = default : void
++Initializer(const Initializer &) = deleted : void
+..
++operator=(const Initializer &) = deleted : Initializer &
+..
+-doFileContains(nlohmann::json config, const std::string & key) : bool
+{static} +getInstance() : Initializer &
++injectArguments(int argc, char ** argv) : bool
++loadData(ReferenceManager & refManager, OrderDatabase & orderDb, Parameters & parameters, Scheduler & ordonator, Site & site) : void
+-parseJsonFile(const std::string & configFilePath) : void
+__
+-m_logisticsPath : std::string
+-m_ordersPath : std::string
+-m_parametersPath : std::string
+-m_productsPath : std::string
+-m_referencesPath : std::string
+}
+class "ParametersParser" as C_0013096302799815787782
+class C_0013096302799815787782 {
+{static} +parseParameters(const std::string & filename) : Parameters
+__
+}
+C_0012685396697071441978 ..> C_0001680707169970652848
+C_0012685396697071441978 o-- C_0005779141798409352122 : -m_actions
+C_0018024257541452379355 o-- C_0011539893726718517993 : +time
+C_0018042704236802414186 --> C_0018024257541452379355 : #m_parameters
+C_0018042704236802414186 o-- C_0012685396697071441978 : #m_taskQueue
+C_0013039340080790387821 o-- C_0001256290093684087115 : +address
+C_0013039340080790387821 o-- C_0003663583436327718788 : +coordinates
+C_0003755976353874626921 o-- C_0014870109770026361187 : +author
+C_0003755976353874626921 o-- C_0001256290093684087115 : +deliveryAddress
+C_0017206861160651201512 o-- C_0003663583436327718788 : -m_coordinates
+C_0011809437179116272381 ..> C_0018024257541452379355
+C_0011809437179116272381 o-- C_0016068270915727952462 : -m_currentTool
+C_0011809437179116272381 --> C_0003755976353874626921 : -m_currentOrder
+C_0011809437179116272381 o-- C_0017206861160651201512 : -m_currentProduct
+C_0011809437179116272381 o-- C_0003663583436327718788 : -m_currentCoodinates
+C_0018042704236802414186 <|-- C_0011809437179116272381
+C_0001371562265082181169 ..> C_0016068270915727952462
+C_0001371562265082181169 ..> C_0012685396697071441978
+C_0001371562265082181169 o-- C_0003663583436327718788 : -m_defaultWorkerCoordinates
+C_0001371562265082181169 o-- C_0011809437179116272381 : -m_workers
+C_0001371562265082181169 --> C_0018024257541452379355 : -m_parameters
+C_0001371562265082181169 o-- C_0003755976353874626921 : -m_orderQueue
+C_0000832345120593247401 ..> C_0001256290093684087115
+C_0000832345120593247401 ..> C_0003663583436327718788
+C_0011420875772156413584 o-- C_0007461687878970102337 : -m_products
+C_0008990303450505123249 o-- C_0017206861160651201512 : -m_products
+C_0008990303450505123249 --> C_0011420875772156413584 : -m_refManager
+C_0016042423543052127520 o-- C_0003663583436327718788 : +coordinates
+C_0016042423543052127520 <|-- C_0003111902286808888849
+C_0012712975260978331577 ..> C_0017206861160651201512
+C_0012712975260978331577 o-- C_0008990303450505123249 : -m_db
+C_0016042423543052127520 <|-- C_0012712975260978331577
+C_0001423274317303257258 o-- C_0003111902286808888849 : +delivery
+C_0001423274317303257258 o-- C_0012712975260978331577 : +storage
+C_0013039340080790387821 <|-- C_0001423274317303257258
+C_0011937890994270573141 --> C_0011809437179116272381 : -m_actionner
+C_0011937890994270573141 o-- C_0003663583436327718788 : -m_destination
+C_0005779141798409352122 <|-- C_0011937890994270573141
+C_0001340163226568550889 --> C_0011809437179116272381 : -m_actionner
+C_0001340163226568550889 --> C_0012712975260978331577 : -m_storage
+C_0001340163226568550889 --> C_0003755976353874626921 : -m_order
+C_0005779141798409352122 <|-- C_0001340163226568550889
+C_0014082224354344259852 --> C_0011809437179116272381 : -m_actionner
+C_0014082224354344259852 --> C_0003111902286808888849 : -m_delivery
+C_0005779141798409352122 <|-- C_0014082224354344259852
+C_0001013872974579043541 ..> C_0003755976353874626921
+C_0001013872974579043541 ..> C_0011809437179116272381
+C_0001013872974579043541 ..> C_0012685396697071441978
+C_0017543753754172777613 ..> C_0014870109770026361187
+C_0017543753754172777613 ..> C_0001256290093684087115
+C_0017543753754172777613 ..> C_0003755976353874626921
+C_0006022151812094361198 ..> C_0014870109770026361187
+C_0006022151812094361198 ..> C_0001256290093684087115
+C_0006022151812094361198 o-- C_0003755976353874626921 : -m_orders
+C_0005059565092965768394 ..> C_0011420875772156413584
+C_0005059565092965768394 ..> C_0006022151812094361198
+C_0005059565092965768394 ..> C_0018024257541452379355
+C_0005059565092965768394 ..> C_0001371562265082181169
+C_0005059565092965768394 ..> C_0001423274317303257258
+C_0013096302799815787782 ..> C_0018024257541452379355
+
+'Generated with clang-uml, version 0.6.0
+'LLVM version Ubuntu clang version 15.0.7
+@enduml
