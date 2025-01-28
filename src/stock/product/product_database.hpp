@@ -9,13 +9,14 @@
 #include "../reference/reference_manager.hpp"
 #include <unordered_map>
 #include <memory>
+#include <optional>
 
 class ProductDatabase {
 private:
     std::unordered_map<std::string, std::vector<std::unique_ptr<Product>>> m_products;
     ReferenceManager* m_refManager = nullptr;
     std::string createSerialNumber(std::string reference);
-    std::string extractProductReference(const std::string& serialNumber);
+    std::optional<std::string> extractProductReference(const std::string& serialNumber);
 public:
     ProductDatabase() = default;
     ProductDatabase(const ProductDatabase&) = delete;

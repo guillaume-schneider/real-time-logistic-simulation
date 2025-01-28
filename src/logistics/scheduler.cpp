@@ -9,9 +9,8 @@ std::shared_ptr<Worker> Scheduler::createWorker(const std::string& name, bool na
     auto workerName = name;
     m_workerCounter++;
     if (nameById) workerName += " " + std::to_string(m_workerCounter);
-    auto worker = std::make_shared<Worker>(m_workerCounter, workerName, m_outputMutex, m_parameters,
+    auto worker = std::make_shared<Worker>(m_workerCounter, workerName, m_outputMutex, *m_isEnteringCommand, m_parameters,
                             m_defaultWorkerCoordinates, m_maxTaskSize);
-        
     m_workers.push_back(worker);
     return worker;
 }

@@ -174,6 +174,6 @@ void OrderDatabase::saveToFile(const std::string& filename) const {
 
 void OrderDatabase::printAllOrders() const {
     for (const auto& [ref, order] : m_orders) {
-        std::cout << order->toString() << "\n";
+        std::cout << order->toString() << "\n\n";
     }
 }

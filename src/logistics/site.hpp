@@ -36,6 +36,14 @@ public:
     std::unique_ptr<Product> getProductByCategoryAndSubcat(const std::string& category, const std::string& sub) {
         return std::move(m_db.getProductByCategoryAndSubcategory(category, sub));
     }
+
+    void listProducts() {
+        m_db.listProducts();
+    }
+
+    void listProductsByCategory() {
+        m_db.listProductsByCategory();
+    }
 };
 
 class Site : public Location {

@@ -17,6 +17,7 @@
 #include "logistics/scheduler.hpp"
 #include "logistics/site.hpp"
 #include <atomic>
+#include "shell.hpp"
 
 
 long long convertTimeInSeconds(const Time& time) {
@@ -36,51 +37,12 @@ void verifyTimescale(Parameters& config) {
 }
 
 
-void clear() {
-    std::cout << "\33[2J";
-}
-
-std::atomic<bool> stopShell(false);
-
-// Fonction pour gérer l'entrée de commandes utilisateur
-void commandShell(std::mutex& output) {
-    std::string command;
-
-    while (!stopShell.load()) {
-        // Afficher la ligne de commande en haut
-        {
-            std::lock_guard<std::mutex> lock(output);
-            std::cout << "\33[H\33[2K"; // Effacer la première ligne
-            std::cout << "Command > ";  // Afficher le prompt
-            std::cout.flush();
-        }
-
-        // Lire la commande utilisateur
-        std::getline(std::cin, command);
-
-        // Vérifier la commande
-        if (command == "exit") {
-            stopShell.store(true);
-        } else if (command == "status") {
-            std::lock_guard<std::mutex> lock(output);
-            std::cout << "\33[2K\33[H"; // Effacer la première ligne
-            std::cout << "Status: All systems running.\n";
-            std::cout.flush();
-        } else {
-            std::lock_guard<std::mutex> lock(output);
-            std::cout << "\33[2K\33[H"; // Effacer la première ligne
-            std::cout << "Unknown command: " << command << "\n";
-            std::cout.flush();
-        }
-    }
-}
-
-
 int main(int argc, char* argv[]) {
     clear();
-    std::shared_ptr<std::mutex> outputMutex = std::make_shared<std::mutex>();
     Scheduler& scheduler = Scheduler::getInstance();
-    scheduler.setOutputMutex(outputMutex);
+    Shell shell;
+    scheduler.setOutputMutex(shell.getOutputMutex());
+    scheduler.setShowLoadingAtomic(shell.getShowLoadingBars());
 
     if (!Initializer::getInstance().injectArguments(argc, argv)) return 1;
     ReferenceManager& refManager = ReferenceManager::getInstance();
@@ -105,17 +67,16 @@ int main(int argc, char* argv[]) {
     auto simDuration = realDuration / parameters.timescale;
     auto start = std::chrono::steady_clock::now();
     scheduler.runScheduler();
-    std::thread shellThread(commandShell, outputMutex);
+    shell.run();
     while (true)
     {
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
         if (elapsed >= simDuration) break;
         if (!scheduler.hasRemainingTask() && scheduler.areWorkersIdle()) break;
+        if(shell.getStopShell().load()) break;
     }
     scheduler.stopScheduler();
-
-    shellThread.join();
 
     return 0;
 }

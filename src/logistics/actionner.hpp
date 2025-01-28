@@ -25,6 +25,8 @@ protected:
     std::thread m_workerThread;               // Thread pour l'exécution
     std::queue<std::shared_ptr<Task>> m_taskQueue;
     std::condition_variable m_taskCondition;  // Condition pour attendre une nouvelle tâche
+    std::atomic<bool>* m_showLoading;
+    mutable bool m_isLoadingDisabled = false;
 
     const int m_maxSizeQueue;
 
@@ -35,13 +37,14 @@ protected:
 public:
     Actionner();
     Actionner(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
-              Parameters* parameters, const int maxTaskSize);
+              std::atomic<bool>& isEnteringCommand, Parameters* parameters, const int maxTaskSize);
     Actionner(const Actionner& other);
     virtual ~Actionner();
     bool submitTask(std::shared_ptr<Task> task);
     bool isBusy() const;
     bool hasTask() const;
     void setParameters(Parameters* parameters);
+    void setCurrentCommand(std::string& currentCommand);
 };
 
 #endif

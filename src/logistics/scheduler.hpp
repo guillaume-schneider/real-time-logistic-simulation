@@ -30,6 +30,7 @@ private:
     std::vector<std::shared_ptr<Worker>> m_workers;
     Parameters* m_parameters;
     std::shared_ptr<std::mutex> m_outputMutex;
+    std::atomic<bool>* m_isEnteringCommand;
 
     std::thread m_schedulerThread;
     bool m_stopThread;
@@ -72,6 +73,36 @@ public:
     bool hasRemainingTask() const;
     bool areWorkersIdle() const;
     void stopScheduler();
+    void setShowLoadingAtomic(std::atomic<bool>& isEnteringCommand) {
+        m_isEnteringCommand = &isEnteringCommand;
+    }
+    void printStatus() {
+        std::lock_guard<std::mutex> lock(m_schedulerMutex);
+
+        std::cout << "=== Scheduler Status ===" << std::endl;
+
+        // Workers
+        std::cout << "Workers: " << m_workers.size() << std::endl;
+        for (const auto& worker : m_workers) {
+            std::cout << "  Worker ID: " << worker->getId()
+                    << ", Name: " << worker->getName()
+                    << ", Status: " << (worker->isBusy() ? "Busy" : "Idle")
+                    << std::endl;
+        }
+
+        // Orders
+        std::cout << "Orders in Queue: " << m_orderQueue.size() << std::endl;
+
+        // Tools
+        std::cout << "Forklifts: " << m_forkliftSize << ", In Use: " << m_forkliftUsedCounter << std::endl;
+        std::cout << "Carriers: " << m_carrierSize << ", In Use: " << m_carrierUsedCounter << std::endl;
+
+        // Tasks and Idle Workers
+        std::cout << "Remaining Tasks: " << (hasRemainingTask() ? "Yes" : "No") << std::endl;
+        std::cout << "Idle Workers: " << getIdleWorker() << std::endl;
+
+        std::cout << "=========================" << std::endl;
+    }
 };
 
 #endif

@@ -65,6 +65,9 @@ long long formatTime(long long time, float timescale) {
 }
 
 
+#include "../utils.hpp"
+
+
 void Actionner::loadingBar(std::shared_ptr<Task> task) const {
     auto actionsDescription = task->getActionDescriptions();
     const int barWidth = 50;
@@ -84,20 +87,33 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
     while (true) {
         std::this_thread::sleep_until(nextRefresh);
         auto now = std::chrono::steady_clock::now();
+        auto elapsedMs = static_cast<float>(
+            std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()
+        );
+
+        if (!m_showLoading->load()) {
+            std::lock_guard<std::mutex> lock(*m_outputMutex);
+            if (!m_isLoadingDisabled) {
+                moveCursor(m_id + 1, 1);
+                clearLine();
+                std::cout.flush();
+                m_isLoadingDisabled = true;
+                moveCursorToCommandLine();
+            }
+            continue;
+        } else {
+            m_isLoadingDisabled = false;
+        }
 
         if (now >= endTime) 
         {
             {
                 std::lock_guard<std::mutex> lock(*m_outputMutex);
-                printProgress(currentActionName, 1.0f, barWidth); 
+                printProgress(currentActionName, 1.0f, barWidth);
+                moveCursorToCommandLine();
             }
             break;
         }
-
-
-        auto elapsedMs = static_cast<float>(
-            std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()
-        );
 
         auto lastName = currentActionName;
         if (formatTime(actionsDescription[0].cumulatedProcessingTime, timescale) > elapsedMs) {
@@ -127,10 +143,12 @@ void Actionner::loadingBar(std::shared_ptr<Task> task) const {
         {
             std::lock_guard<std::mutex> lock(*m_outputMutex);
             printProgress(currentActionName, progress, barWidth);
+            moveCursorToCommandLine();
         }
 
         nextRefresh += frameInterval;
     }
+
 }
 
 Actionner::Actionner() : m_id(), m_name(), m_outputMutex(nullptr),
@@ -138,14 +156,15 @@ Actionner::Actionner() : m_id(), m_name(), m_outputMutex(nullptr),
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 Actionner::Actionner(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
-            Parameters* parameters = nullptr, const int maxTaskSize = 100)
+    std::atomic<bool>& isEnteringCommand, Parameters* parameters = nullptr, const int maxTaskSize = 100)
     : m_id(actionnerId), m_name(name), m_outputMutex(outputMtx),
-        m_parameters(parameters), m_maxSizeQueue(maxTaskSize) {
+        m_parameters(parameters), m_maxSizeQueue(maxTaskSize),
+            m_showLoading(&isEnteringCommand) {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 Actionner::Actionner(const Actionner& other) : m_id(other.m_id), m_name(other.m_name),
     m_outputMutex(other.m_outputMutex), m_parameters(other.m_parameters), 
-        m_maxSizeQueue(other.m_maxSizeQueue) {
+        m_maxSizeQueue(other.m_maxSizeQueue), m_showLoading(other.m_showLoading) {
     m_workerThread = std::thread(&Actionner::threadLoop, this);
 }
 

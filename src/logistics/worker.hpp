@@ -18,9 +18,9 @@ private:
 public:
     Worker() : Actionner(), m_speed(5.0f), m_currentTool(None), m_currentCoodinates(Point2D()), m_currentOrder(nullptr) {}
     Worker(int actionnerId, const std::string& name, std::shared_ptr<std::mutex> outputMtx,
-            Parameters* config = nullptr, const Point2D& coordinates = Point2D(),
+            std::atomic<bool>& isEnteringCommand, Parameters* config = nullptr, const Point2D& coordinates = Point2D(),
             const int maxTaskSize = 100, float speed = 8.0f)
-        : Actionner(actionnerId, name, outputMtx, config, maxTaskSize),
+        : Actionner(actionnerId, name, outputMtx, isEnteringCommand, config, maxTaskSize),
             m_speed(speed), m_currentTool(None), m_currentCoodinates(coordinates), m_currentOrder(nullptr) {}
 
     void setTool(const ToolType& type) {
@@ -74,5 +74,8 @@ public:
     }
     const Point2D& getCoordinates() const { return m_currentCoodinates; }
 
+    std::string getName() const {
+        return m_name;
+    }
 };
 #endif

@@ -14,16 +14,15 @@ constexpr size_t subCategoryLength = 3;
 constexpr size_t yearLength = 2;
 
 
-std::string ProductDatabase::extractProductReference(const std::string& serialNumber) {
-    // Regex pour valider et extraire la référence produit
+std::optional<std::string> ProductDatabase::extractProductReference(const std::string& serialNumber) {
     std::regex serialRegex("([A-Z]+\\d+\\d{2})(\\d{4})");
     std::smatch match;
 
     if (std::regex_match(serialNumber, match, serialRegex)) {
-        return match[1]; // La référence produit correspond au premier groupe capturé
-    } else {
-        throw std::invalid_argument("Invalid serial number format.");
+        return match[1];
     }
+
+    return std::nullopt;
 }
 
 
@@ -104,7 +103,13 @@ void ProductDatabase::createProduct(const std::string& reference, int number)
 }
 
 std::unique_ptr<Product> ProductDatabase::getProduct(const std::string& serialNumber) {
-    std::string productReference = extractProductReference(serialNumber);
+    auto productReferenceResult = extractProductReference(serialNumber);
+    if (productReferenceResult == std::nullopt) {
+        std::cerr << "ProductDatabase::moveProduct Error: No product found with reference '" << productReferenceResult.value() << "'\n";
+        return nullptr;
+    }
+
+    auto productReference = productReferenceResult.value();
 
     auto& sourceVec = m_products[productReference];
     if (sourceVec.empty()) {

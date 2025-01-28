@@ -4,6 +4,7 @@
 #include <string>
 #include "../reference/product_reference.hpp"
 #include "../../logistics/coordinates.hpp"
+#include <sstream>
 
 class Product {
 private:
@@ -32,6 +33,13 @@ public:
     std::string getProductReference() const { return m_reference; }
     void setCoordinates(const Point2D coordinates) { m_coordinates = coordinates; }
     Point2D getCoordinates() const { return m_coordinates; }
+    std::string toString() const {
+        std::ostringstream oss;
+        oss << "Product [Serial Number: " << m_serialNumber
+            << ", Reference: " << m_reference
+            << ", Coordinates: (" << m_coordinates.x << ", " << m_coordinates.y << ")]";
+        return oss.str();
+    }
 };
 
 #endif
