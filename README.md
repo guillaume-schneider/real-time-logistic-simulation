@@ -3,10 +3,9 @@
 ## Overview
 
 The project is part of the 
-"Object-oriented programming and Languages: level II" course, taught 
+[Object-oriented programming and Languages: level II](https://guide-ue.utbm.fr/en/ue/2024/PR72/AI) course, taught 
 during the Autumn semester of the 2024/2025 academic year at the 
 University of Technology of Belfort-Montbéliard (UTBM).
-See https://guide-ue.utbm.fr/en/ue/2024/PR72/AI.
 
 This project aims to develop a real-time logistics platform simulator in
  C++, focusing on managing product flows and storage from reception to 
