@@ -2,6 +2,12 @@
 
 ## Overview
 
+The project is part of the 
+"Object-oriented programming and Languages: level II" course, taught 
+during the Autumn semester of the 2024/2025 academic year at the 
+University of Technology of Belfort-Montbéliard (UTBM).
+See https://guide-ue.utbm.fr/en/ue/2024/PR72/AI.
+
 This project aims to develop a real-time logistics platform simulator in
  C++, focusing on managing product flows and storage from reception to 
 customer delivery. It employs multithreading to handle concurrent tasks 
@@ -13,6 +19,8 @@ interface for dynamic interaction and follows a structured workflow from
 delivery logic and graphical result display are not fully implemented, 
 the core real-time logic and data management are successfully 
 integrated, providing a robust foundation for future extensions.
+
+For detailed documentation, please refer to the [Real-Time Logistic Simulation Documentation](https://archive.org/details/real-time-logistic-simulation).
 
 ## Build Instructions
 
