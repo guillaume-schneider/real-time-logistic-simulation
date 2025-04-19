@@ -1,8 +1,18 @@
-# Logistic Simulation Project
+# Real Time Logistic Simulation
 
 ## Overview
 
-The Logistic Simulation project is designed to simulate logistics operations, including order processing and scheduling. It utilizes a scheduler and a shell interface to manage tasks and interact with users in real-time.
+This project aims to develop a real-time logistics platform simulator in
+ C++, focusing on managing product flows and storage from reception to 
+customer delivery. It employs multithreading to handle concurrent tasks 
+efficiently, models spatial and temporal dimensions for accurate 
+logistical constraints, and uses a flexible data model with singletons 
+and JSON for storage. The simulator includes a real-time command-line 
+interface for dynamic interaction and follows a structured workflow from
+ initialization to termination. While some features like customer 
+delivery logic and graphical result display are not fully implemented, 
+the core real-time logic and data management are successfully 
+integrated, providing a robust foundation for future extensions.
 
 ## Build Instructions
 
